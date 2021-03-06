@@ -1,7 +1,8 @@
-import models
-import sys, inspect
+import inspect
+
 from sqlalchemy.orm import sessionmaker
 
+import models
 
 data = []
 
@@ -15,7 +16,6 @@ Session = sessionmaker()
 Session.configure(bind=models.engine)
 session = Session()
 table = data[0]
-
 
 
 print('test')

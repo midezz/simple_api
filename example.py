@@ -1,10 +1,9 @@
-from starlette.responses import PlainTextResponse
-from starlette.applications import Starlette
-from starlette.endpoints import HTTPEndpoint
-from starlette.routing import Route
-from simple_api import SimpleApi
-import models
 import uvicorn
+from starlette.endpoints import HTTPEndpoint
+from starlette.responses import PlainTextResponse
+
+import models
+from simple_api import SimpleApi
 
 
 class Homepage(HTTPEndpoint):

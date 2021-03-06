@@ -61,3 +61,9 @@ HANDLER_CLASS = {
     ('delete', 'get'): UpdateAPI,
     ('put',): GetDeleteAPI,
 }
+
+HANDLER_CLASS_LISTCREATE = {
+    ('list', 'post'): ListCreateAPI,
+    ('list',): ListAPI,
+    ('post',): CreateAPI,
+}

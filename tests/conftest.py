@@ -1,4 +1,5 @@
 import pytest
+
 from tests import models
 
 

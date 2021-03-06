@@ -1,7 +1,7 @@
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, create_engine
-from simple_api import Endpoint
+from sqlalchemy.ext.declarative import declarative_base
 
+from simple_api import Endpoint
 
 Base = declarative_base()
 

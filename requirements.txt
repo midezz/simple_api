@@ -5,3 +5,4 @@ starlette==0.14.2
 uvicorn==0.13.4
 flake8
 pytest
+isort
