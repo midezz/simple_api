@@ -14,7 +14,7 @@ class Homepage(HTTPEndpoint):
 # app = Starlette(debug=True, routes=[Route('/', Homepage)])
 
 
-app = SimpleApi(models)
+app = SimpleApi(models, 'postgresql://pydantic_orm:123456@127.0.0.1/pydantic_test')
 
 if __name__ == '__main__':
     uvicorn.run(app.app)

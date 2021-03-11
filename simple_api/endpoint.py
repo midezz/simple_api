@@ -14,7 +14,7 @@ class Endpoint:
         denied_methods = []
 
     @classmethod
-    def get_listcreate_routes(cls):
+    def get_listcreate_routes(cls, session):
         allowed_methods = []
         if 'post' not in cls.ConfigEndpoint.denied_methods:
             allowed_methods.append('post')
@@ -25,7 +25,7 @@ class Endpoint:
         path = '/' + cls.__tablename__
         allowed_methods.sort()
         handler_class = HANDLER_CLASS_LISTCREATE[tuple(allowed_methods)]
-        return SimpleApiRouter(cls, path, handler_class)
+        return SimpleApiRouter(cls, session, path, handler_class)
 
     @classmethod
     def get_handler_class(cls):
@@ -39,9 +39,14 @@ class Endpoint:
         return HANDLER_CLASS.get(denied_methods, GetUpdateDeleteAPI)
 
     @classmethod
-    def get_other_routes(cls):
+    def get_other_routes(cls, session):
         handler_class = cls.get_handler_class()
         if not handler_class:
             return None
         path = '/' + cls.__tablename__ + '/{id}'
-        return SimpleApiRouter(cls, path, handler_class)
+        return SimpleApiRouter(cls, session, path, handler_class)
+
+    @classmethod
+    def get_columns_values(cls, model):
+        columns = [c.name for c in cls.__table__.columns]
+        return {column: getattr(model, column) for column in columns}

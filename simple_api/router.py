@@ -4,8 +4,9 @@ from starlette.routing import Route
 
 
 class SimpleApiRouter(Route):
-    def __init__(self, model, *args, **kwargs):
+    def __init__(self, model, session, *args, **kwargs):
         self.model = model
+        self.session = session
         super().__init__(*args, **kwargs)
 
     async def handle(self, scope, receive, send):
@@ -16,4 +17,4 @@ class SimpleApiRouter(Route):
                 response = PlainTextResponse("Method Not Allowed", status_code=405)
             await response(scope, receive, send)
         else:
-            await self.app(self.model, scope, receive, send)
+            await self.app(self.model, self.session, scope, receive, send)

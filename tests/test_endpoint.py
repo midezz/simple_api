@@ -1,6 +1,9 @@
 import pytest
+from sqlalchemy.orm import sessionmaker
 
 from tests.models import CustomUser
+
+Session = sessionmaker()
 
 
 class TestEndpoint:
@@ -25,7 +28,7 @@ class TestEndpoint:
         model = CustomUser
         model.ConfigEndpoint.denied_methods = ['post']
         model.ConfigEndpoint.pegination = 0
-        assert model.get_listcreate_routes() is None
+        assert model.get_listcreate_routes(Session) is None
 
     @pytest.mark.parametrize(
         'denied_methods, pagination, expected_class',
@@ -39,14 +42,14 @@ class TestEndpoint:
         model = CustomUser
         model.ConfigEndpoint.denied_methods = denied_methods
         model.ConfigEndpoint.pegination = pagination
-        router = model.get_listcreate_routes()
+        router = model.get_listcreate_routes(Session)
         assert router.path == '/' + CustomUser.__tablename__
         assert router.endpoint.__name__ == expected_class
 
     def test_all_other_methonds_not_allowed(self):
         model = CustomUser
         model.ConfigEndpoint.denied_methods = ['put', 'delete', 'get']
-        assert model.get_other_routes() is None
+        assert model.get_other_routes(Session) is None
 
     @pytest.mark.parametrize(
         'denied_methods, expected_class',
@@ -64,6 +67,6 @@ class TestEndpoint:
     def test_get_other_routes(self, denied_methods, expected_class):
         model = CustomUser
         model.ConfigEndpoint.denied_methods = denied_methods
-        router = model.get_other_routes()
+        router = model.get_other_routes(Session)
         assert router.path == '/' + CustomUser.__tablename__ + '/{id}'
         assert router.endpoint.__name__ == expected_class

@@ -1,16 +1,24 @@
 from starlette.endpoints import HTTPEndpoint
-from starlette.responses import PlainTextResponse
+from starlette.responses import JSONResponse, PlainTextResponse
 
 
 class APIView(HTTPEndpoint):
-    def __init__(self, model, *args, **kwargs):
+    def __init__(self, model, session, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model = model
+        self.session = session
 
 
 class CreateAPI(APIView):
     async def post(self, request):
-        pass
+        data = await request.json()
+        session = self.session()
+        model = self.model(**data)
+        session.add(model)
+        session.commit()
+        values = self.model.get_columns_values(model)
+        session.close()
+        return JSONResponse(values)
 
 
 class ListAPI(APIView):
