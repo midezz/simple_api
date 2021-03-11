@@ -1,5 +1,5 @@
 from starlette.endpoints import HTTPEndpoint
-from starlette.responses import JSONResponse, PlainTextResponse
+from starlette.responses import JSONResponse
 
 
 class APIView(HTTPEndpoint):
@@ -13,17 +13,33 @@ class CreateAPI(APIView):
     async def post(self, request):
         data = await request.json()
         session = self.session()
-        model = self.model(**data)
-        session.add(model)
-        session.commit()
-        values = self.model.get_columns_values(model)
-        session.close()
-        return JSONResponse(values)
+        try:
+            model = self.model(**data)
+            session.add(model)
+            session.commit()
+            values = self.model.get_columns_values(model)
+        except Exception:
+            session.close()
+            return JSONResponse({'error': True}, status_code=400)
+        else:
+            session.close()
+            return JSONResponse(values, status_code=201)
 
 
 class ListAPI(APIView):
     async def get(self, request):
-        pass
+        session = self.session()
+        validate_filters = self.model.valid_filters(request.query_params)
+        if 'error' in validate_filters:
+            session.close()
+            return JSONResponse(validate_filters, status_code=400)
+        filters = self.model.construct_filters(request.query_params)
+        query = session.query(self.model).filter(*filters)
+        result = [self.model.get_columns_values(model) for model in query.all()]
+        session.close()
+        if len(result) == 0:
+            return JSONResponse({'error': 'Not found'}, status_code=404)
+        return JSONResponse(result)
 
 
 class ListCreateAPI(ListAPI, CreateAPI):
@@ -32,7 +48,17 @@ class ListCreateAPI(ListAPI, CreateAPI):
 
 class GetAPI(APIView):
     async def get(self, request):
-        return PlainTextResponse(self.model.__name__)
+        session = self.session()
+        try:
+            result = session.query(self.model).filter_by(**request.path_params).first()
+        except Exception:
+            session.close()
+            return JSONResponse({'error': True}, status_code=400)
+        session.close()
+        if not result:
+            return JSONResponse({'error': 'Not found'}, status_code=404)
+        values = self.model.get_columns_values(result)
+        return JSONResponse(values)
 
 
 class UpdateAPI(APIView):
