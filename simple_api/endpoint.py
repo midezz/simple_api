@@ -8,17 +8,17 @@ CONDITIONS = {
     'lte': lambda a, b: a <= b,
     'gt': lambda a, b: a > b,
     'gte': lambda a, b: a >= b,
-    'equal': lambda a, b: a == b
+    'equal': lambda a, b: a == b,
 }
 
 
-class Endpoint():
+class Endpoint:
     @declared_attr
     def __tablename__(cls):
         return cls.__name__.lower()
 
     @classmethod
-    def get_listcreate_routes(cls, session):
+    def get_listcreate_routes(cls):
         allowed_methods = []
         if 'post' not in cls.ConfigEndpoint.denied_methods:
             allowed_methods.append('post')
@@ -29,7 +29,7 @@ class Endpoint():
         path = '/' + cls.__tablename__
         allowed_methods.sort()
         handler_class = HANDLER_CLASS_LISTCREATE[tuple(allowed_methods)]
-        return SimpleApiRouter(cls, session, path, handler_class)
+        return SimpleApiRouter(cls, path, handler_class)
 
     @classmethod
     def get_handler_class(cls):
@@ -43,12 +43,12 @@ class Endpoint():
         return HANDLER_CLASS.get(denied_methods, GetUpdateDeleteAPI)
 
     @classmethod
-    def get_other_routes(cls, session):
+    def get_other_routes(cls):
         handler_class = cls.get_handler_class()
         if not handler_class:
             return None
         path = '/' + cls.__tablename__ + '/{id}'
-        return SimpleApiRouter(cls, session, path, handler_class)
+        return SimpleApiRouter(cls, path, handler_class)
 
     @classmethod
     def get_columns_values(cls, model):
@@ -61,7 +61,9 @@ class Endpoint():
         for param, value in params.items():
             conditions = param.split('__')
             if len(conditions) > 1:
-                criterion = CONDITIONS.get(conditions[1])(getattr(cls, conditions[0]), value)
+                criterion = CONDITIONS.get(conditions[1])(
+                    getattr(cls, conditions[0]), value
+                )
                 filters.append(criterion)
             else:
                 criterion = CONDITIONS.get('equal')(getattr(cls, conditions[0]), value)
@@ -73,6 +75,10 @@ class Endpoint():
         columns = [c.name for c in cls.__table__.columns]
         for filter in params:
             cur_filter = filter.split('__')
-            if cur_filter[0] not in columns or len(cur_filter) > 1 and cur_filter[1] not in ('gte', 'gt', 'lte', 'lt'):
+            if (
+                cur_filter[0] not in columns
+                or len(cur_filter) > 1
+                and cur_filter[1] not in ('gte', 'gt', 'lte', 'lt')
+            ):
                 return {'error': f'Filter \'{filter}\' is not valid'}
         return {'valid': True}

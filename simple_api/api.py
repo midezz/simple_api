@@ -1,18 +1,20 @@
+from sqlalchemy.orm import sessionmaker
 from starlette.endpoints import HTTPEndpoint
 from starlette.responses import JSONResponse
 
+Session = sessionmaker()
+
 
 class APIView(HTTPEndpoint):
-    def __init__(self, model, session, *args, **kwargs):
+    def __init__(self, model, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model = model
-        self.session = session
 
 
 class CreateAPI(APIView):
     async def post(self, request):
         data = await request.json()
-        session = self.session()
+        session = Session()
         try:
             model = self.model(**data)
             session.add(model)
@@ -28,7 +30,7 @@ class CreateAPI(APIView):
 
 class ListAPI(APIView):
     async def get(self, request):
-        session = self.session()
+        session = Session()
         validate_filters = self.model.valid_filters(request.query_params)
         if 'error' in validate_filters:
             session.close()
@@ -48,7 +50,7 @@ class ListCreateAPI(ListAPI, CreateAPI):
 
 class GetAPI(APIView):
     async def get(self, request):
-        session = self.session()
+        session = Session()
         try:
             result = session.query(self.model).filter_by(**request.path_params).first()
         except Exception:
@@ -68,7 +70,20 @@ class UpdateAPI(APIView):
 
 class DeleteAPI(APIView):
     async def delete(self, request):
-        pass
+        session = Session()
+        try:
+            result = session.query(self.model).filter_by(**request.path_params).first()
+            if not result:
+                session.close()
+                return JSONResponse({'error': 'Not found'}, status_code=404)
+            session.delete(result)
+            session.commit()
+        except Exception:
+            session.close()
+            return JSONResponse({'error': True}, status_code=400)
+        session.close()
+        values = self.model.get_columns_values(result)
+        return JSONResponse(values)
 
 
 class GetUpdateDeleteAPI(GetAPI, UpdateAPI, DeleteAPI):

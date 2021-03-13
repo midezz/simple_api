@@ -1,8 +1,13 @@
+from random import choices
+
 import pytest
-from sqlalchemy import Column, Integer
+from sqlalchemy import Column, Integer, create_engine
+from sqlalchemy_utils import create_database, drop_database
 
 from simple_api import Endpoint
 from tests import models
+
+from .models import Base
 
 
 class ModelTest(models.Base, Endpoint):
@@ -25,3 +30,24 @@ def module_models():
 @pytest.fixture
 def class_modeltest():
     return ModelTest
+
+
+@pytest.fixture(scope='session')
+def db_url():
+    db = 'postgresql://pydantic_orm:123456@127.0.0.1'
+    db_name = 'test_' + ''.join(choices('0123456789', k=20))
+    url = f'{db}/{db_name}'
+    return url
+
+
+@pytest.fixture(scope='session')
+def engine(db_url):
+    return create_engine(db_url)
+
+
+@pytest.fixture(scope='session')
+def db_setup(db_url, engine):
+    create_database(db_url)
+    Base.metadata.create_all(engine)
+    yield
+    drop_database(db_url)

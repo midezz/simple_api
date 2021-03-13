@@ -9,7 +9,11 @@ class ConfigEndpoint:
 
     @classmethod
     def get_attrs(cls):
-        return {attr: getattr(cls, attr) for attr in cls.__dict__ if attr.find('__') == -1 and attr != 'get_attrs'}
+        return {
+            attr: getattr(cls, attr)
+            for attr in cls.__dict__
+            if attr.find('__') == -1 and attr != 'get_attrs'
+        }
 
 
 class ConstructEndpoint(DeclarativeMeta):

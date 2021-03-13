@@ -1,9 +1,6 @@
 import pytest
-from sqlalchemy.orm import sessionmaker
 
 from tests.models import CustomUser
-
-Session = sessionmaker()
 
 
 class TestEndpoint:
@@ -17,7 +14,7 @@ class TestEndpoint:
             (['post', 'delete'], 'GetUpdateAPI'),
             (['put'], 'GetDeleteAPI'),
             (['put', 'get'], 'DeleteAPI'),
-        )
+        ),
     )
     def test_get_handler_class(self, denied_methods, expected):
         model = CustomUser
@@ -28,7 +25,7 @@ class TestEndpoint:
         model = CustomUser
         model.ConfigEndpoint.denied_methods = ['post']
         model.ConfigEndpoint.pagination = 0
-        assert model.get_listcreate_routes(Session) is None
+        assert model.get_listcreate_routes() is None
 
     @pytest.mark.parametrize(
         'denied_methods, pagination, expected_class',
@@ -36,20 +33,20 @@ class TestEndpoint:
             (['post'], 100, 'ListAPI'),
             ([], 100, 'ListCreateAPI'),
             ([], 0, 'CreateAPI'),
-        )
+        ),
     )
     def test_get_listcreate_routes(self, denied_methods, pagination, expected_class):
         model = CustomUser
         model.ConfigEndpoint.denied_methods = denied_methods
         model.ConfigEndpoint.pagination = pagination
-        router = model.get_listcreate_routes(Session)
+        router = model.get_listcreate_routes()
         assert router.path == '/' + CustomUser.__tablename__
         assert router.endpoint.__name__ == expected_class
 
     def test_all_other_methonds_not_allowed(self):
         model = CustomUser
         model.ConfigEndpoint.denied_methods = ['put', 'delete', 'get']
-        assert model.get_other_routes(Session) is None
+        assert model.get_other_routes() is None
 
     @pytest.mark.parametrize(
         'denied_methods, expected_class',
@@ -61,13 +58,12 @@ class TestEndpoint:
             (['put', 'delete'], 'GetAPI'),
             (['post'], 'GetUpdateDeleteAPI'),
             ([], 'GetUpdateDeleteAPI'),
-
-        )
+        ),
     )
     def test_get_other_routes(self, denied_methods, expected_class):
         model = CustomUser
         model.ConfigEndpoint.denied_methods = denied_methods
-        router = model.get_other_routes(Session)
+        router = model.get_other_routes()
         assert router.path == '/' + CustomUser.__tablename__ + '/{id}'
         assert router.endpoint.__name__ == expected_class
 
@@ -81,7 +77,7 @@ class TestEndpoint:
             ({'name__lt': 'test'}, {'valid': True}),
             ({'bla': 'test'}, {'error': 'Filter \'bla\' is not valid'}),
             ({'name__bla': 'test'}, {'error': 'Filter \'name__bla\' is not valid'}),
-        )
+        ),
     )
     def test_validate_filters(self, filters, expected):
         assert CustomUser.valid_filters(filters) == expected

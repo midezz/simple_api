@@ -1,12 +1,10 @@
 import inspect
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from starlette.applications import Starlette
 
+from .api import Session
 from .endpoint import Endpoint
-
-Session = sessionmaker()
 
 
 class SimpleApi:
@@ -22,10 +20,10 @@ class SimpleApi:
 
     def get_routes(self):
         for model in self.models:
-            listcreate_routes = model.get_listcreate_routes(Session)
+            listcreate_routes = model.get_listcreate_routes()
             if listcreate_routes:
                 self.routes.append(listcreate_routes)
-            other_routes = model.get_other_routes(Session)
+            other_routes = model.get_other_routes()
             if other_routes:
                 self.routes.append(other_routes)
 
