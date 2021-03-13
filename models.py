@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
-from simple_api import Endpoint
+from simple_api import ConstructEndpoint, Endpoint
 
-Base = declarative_base()
+Base = declarative_base(metaclass=ConstructEndpoint)
 
 
 class CustomUser(Base, Endpoint):
@@ -11,6 +11,9 @@ class CustomUser(Base, Endpoint):
     name = Column(String)
     surname = Column(String)
     age = Column(Integer)
+
+    class ConfigEndpoint:
+        denied_methods = ['post']
 
 
 class Car(Base, Endpoint):

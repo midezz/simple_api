@@ -27,7 +27,7 @@ class TestEndpoint:
     def test_get_listcreate_routes_is_none(self):
         model = CustomUser
         model.ConfigEndpoint.denied_methods = ['post']
-        model.ConfigEndpoint.pegination = 0
+        model.ConfigEndpoint.pagination = 0
         assert model.get_listcreate_routes(Session) is None
 
     @pytest.mark.parametrize(
@@ -41,7 +41,7 @@ class TestEndpoint:
     def test_get_listcreate_routes(self, denied_methods, pagination, expected_class):
         model = CustomUser
         model.ConfigEndpoint.denied_methods = denied_methods
-        model.ConfigEndpoint.pegination = pagination
+        model.ConfigEndpoint.pagination = pagination
         router = model.get_listcreate_routes(Session)
         assert router.path == '/' + CustomUser.__tablename__
         assert router.endpoint.__name__ == expected_class

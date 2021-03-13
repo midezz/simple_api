@@ -3,7 +3,6 @@ from sqlalchemy.ext.declarative import declared_attr
 from .api import HANDLER_CLASS, HANDLER_CLASS_LISTCREATE, GetUpdateDeleteAPI
 from .router import SimpleApiRouter
 
-
 CONDITIONS = {
     'lt': lambda a, b: a < b,
     'lte': lambda a, b: a <= b,
@@ -13,21 +12,17 @@ CONDITIONS = {
 }
 
 
-class Endpoint:
+class Endpoint():
     @declared_attr
     def __tablename__(cls):
         return cls.__name__.lower()
-
-    class ConfigEndpoint:
-        pegination = 100
-        denied_methods = []
 
     @classmethod
     def get_listcreate_routes(cls, session):
         allowed_methods = []
         if 'post' not in cls.ConfigEndpoint.denied_methods:
             allowed_methods.append('post')
-        if cls.ConfigEndpoint.pegination > 0:
+        if cls.ConfigEndpoint.pagination > 0:
             allowed_methods.append('list')
         if len(allowed_methods) == 0:
             return None
