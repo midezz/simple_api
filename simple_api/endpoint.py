@@ -1,4 +1,4 @@
-from sqlalchemy.ext.declarative import declared_attr, DeclarativeMeta
+from sqlalchemy.ext.declarative import DeclarativeMeta, declared_attr
 
 from .api import HANDLER_CLASS, HANDLER_CLASS_LISTCREATE, GetUpdateDeleteAPI
 from .router import SimpleApiRouter

@@ -2,8 +2,7 @@ import pytest
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 
-from simple_api import Session
-from simple_api import api
+from simple_api import Session, api
 from simple_api.router import SimpleApiRouter
 
 from .models import Car
@@ -83,9 +82,13 @@ class TestCreateAPI(BaseTestAPI):
         'data',
         (
             {'name_model': 'test', 'production': 'new test', 'year': 'a'},
-            {'name_model': 'test', 'production': 'new test', 'year': 100, 'not_exist_field': 'test'},
-
-        )
+            {
+                'name_model': 'test',
+                'production': 'new test',
+                'year': 100,
+                'not_exist_field': 'test',
+            },
+        ),
     )
     def test_bad_request(self, data):
         data = {'name_model': 'test', 'production': 'new test', 'year': 'a'}

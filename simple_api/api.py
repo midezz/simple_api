@@ -1,6 +1,7 @@
-from simple_api import Session
 from starlette.endpoints import HTTPEndpoint
 from starlette.responses import JSONResponse
+
+from simple_api import Session
 
 
 class APIView(HTTPEndpoint):
