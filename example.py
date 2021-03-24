@@ -3,7 +3,7 @@ from starlette.endpoints import HTTPEndpoint
 from starlette.responses import PlainTextResponse
 
 import models
-from simple_api import SimpleApi
+from simple_api.main import SimpleApi
 
 
 class Homepage(HTTPEndpoint):

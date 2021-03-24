@@ -1,4 +1,4 @@
-from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.declarative import declared_attr, DeclarativeMeta
 
 from .api import HANDLER_CLASS, HANDLER_CLASS_LISTCREATE, GetUpdateDeleteAPI
 from .router import SimpleApiRouter
@@ -26,9 +26,9 @@ class Endpoint:
             allowed_methods.append('list')
         if len(allowed_methods) == 0:
             return None
-        path = '/' + cls.__tablename__
         allowed_methods.sort()
         handler_class = HANDLER_CLASS_LISTCREATE[tuple(allowed_methods)]
+        path = '/' + cls.__tablename__
         return SimpleApiRouter(cls, path, handler_class)
 
     @classmethod
@@ -82,3 +82,28 @@ class Endpoint:
             ):
                 return {'error': f'Filter \'{filter}\' is not valid'}
         return {'valid': True}
+
+
+class ConfigEndpoint:
+    pagination = 100
+    denied_methods = []
+
+    @classmethod
+    def get_attrs(cls):
+        return {
+            attr: getattr(cls, attr)
+            for attr in cls.__dict__
+            if attr.find('__') == -1 and attr != 'get_attrs'
+        }
+
+
+class ConstructEndpoint(DeclarativeMeta):
+    def __new__(mcl, name, base, namespace, **kwargs):
+        if Endpoint in base:
+            if not namespace.get('ConfigEndpoint'):
+                namespace['ConfigEndpoint'] = ConfigEndpoint
+            else:
+                for attr, val in ConfigEndpoint.get_attrs().items():
+                    if not hasattr(namespace['ConfigEndpoint'], attr):
+                        setattr(namespace['ConfigEndpoint'], attr, val)
+        return super().__new__(mcl, name, base, namespace, **kwargs)

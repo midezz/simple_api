@@ -1,6 +1,6 @@
 import pytest
 
-from simple_api import SimpleApi
+from simple_api.main import SimpleApi
 from tests import models
 
 

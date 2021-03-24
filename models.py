@@ -1,7 +1,8 @@
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
-from simple_api import ConstructEndpoint, Endpoint
+from simple_api.endpoint import Endpoint, ConstructEndpoint
+
 
 Base = declarative_base(metaclass=ConstructEndpoint)
 

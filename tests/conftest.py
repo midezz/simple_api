@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy import Column, Integer, create_engine
 from sqlalchemy_utils import create_database, drop_database
 
-from simple_api import Endpoint
+from simple_api.endpoint import Endpoint
 from tests import models
 
 from .models import Base

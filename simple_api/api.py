@@ -1,8 +1,6 @@
-from sqlalchemy.orm import sessionmaker
+from simple_api import Session
 from starlette.endpoints import HTTPEndpoint
 from starlette.responses import JSONResponse
-
-Session = sessionmaker()
 
 
 class APIView(HTTPEndpoint):
@@ -116,3 +114,5 @@ HANDLER_CLASS_LISTCREATE = {
     ('list',): ListAPI,
     ('post',): CreateAPI,
 }
+
+CLASSES_LISTCREATE = (ListCreateAPI, ListAPI, CreateAPI)
