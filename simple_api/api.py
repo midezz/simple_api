@@ -2,6 +2,7 @@ from starlette.endpoints import HTTPEndpoint
 from starlette.responses import JSONResponse
 
 from simple_api import Session
+from simple_api.url_params import UrlParams
 
 
 class APIView(HTTPEndpoint):
@@ -30,12 +31,11 @@ class CreateAPI(APIView):
 class ListAPI(APIView):
     async def get(self, request):
         session = Session()
-        validate_filters = self.model.valid_filters(request.query_params)
-        if 'error' in validate_filters:
+        params = UrlParams(self.model, request.query_params)
+        if not params.is_valid():
             session.close()
-            return JSONResponse(validate_filters, status_code=400)
-        filters = self.model.construct_filters(request.query_params)
-        query = session.query(self.model).filter(*filters)
+            return JSONResponse(params.error, status_code=400)
+        query = session.query(self.model).filter(*params.filters)
         result = [self.model.get_columns_values(model) for model in query.all()]
         session.close()
         return JSONResponse(result)

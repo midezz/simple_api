@@ -3,14 +3,6 @@ from sqlalchemy.ext.declarative import DeclarativeMeta, declared_attr
 from .api import HANDLER_CLASS, HANDLER_CLASS_LISTCREATE, GetUpdateDeleteAPI
 from .router import SimpleApiRouter
 
-CONDITIONS = {
-    'lt': lambda a, b: a < b,
-    'lte': lambda a, b: a <= b,
-    'gt': lambda a, b: a > b,
-    'gte': lambda a, b: a >= b,
-    'equal': lambda a, b: a == b,
-}
-
 
 class Endpoint:
     @declared_attr
@@ -54,34 +46,6 @@ class Endpoint:
     def get_columns_values(cls, model):
         columns = [c.name for c in cls.__table__.columns]
         return {column: getattr(model, column) for column in columns}
-
-    @classmethod
-    def construct_filters(cls, params):
-        filters = []
-        for param, value in params.items():
-            conditions = param.split('__')
-            if len(conditions) > 1:
-                criterion = CONDITIONS.get(conditions[1])(
-                    getattr(cls, conditions[0]), value
-                )
-                filters.append(criterion)
-            else:
-                criterion = CONDITIONS.get('equal')(getattr(cls, conditions[0]), value)
-                filters.append(criterion)
-        return filters
-
-    @classmethod
-    def valid_filters(cls, params):
-        columns = [c.name for c in cls.__table__.columns]
-        for filter in params:
-            cur_filter = filter.split('__')
-            if (
-                cur_filter[0] not in columns
-                or len(cur_filter) > 1
-                and cur_filter[1] not in ('gte', 'gt', 'lte', 'lt')
-            ):
-                return {'error': f'Filter \'{filter}\' is not valid'}
-        return {'valid': True}
 
 
 class ConfigEndpoint:

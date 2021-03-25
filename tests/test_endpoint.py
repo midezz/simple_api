@@ -66,18 +66,3 @@ class TestEndpoint:
         router = model.get_other_routes()
         assert router.path == '/' + CustomUser.__tablename__ + '/{id}'
         assert router.endpoint.__name__ == expected_class
-
-    @pytest.mark.parametrize(
-        'filters, expected',
-        (
-            ({'name': 'test'}, {'valid': True}),
-            ({'name__gte': 'test'}, {'valid': True}),
-            ({'name__lte': 'test'}, {'valid': True}),
-            ({'name__gt': 'test'}, {'valid': True}),
-            ({'name__lt': 'test'}, {'valid': True}),
-            ({'bla': 'test'}, {'error': 'Filter \'bla\' is not valid'}),
-            ({'name__bla': 'test'}, {'error': 'Filter \'name__bla\' is not valid'}),
-        ),
-    )
-    def test_validate_filters(self, filters, expected):
-        assert CustomUser.valid_filters(filters) == expected

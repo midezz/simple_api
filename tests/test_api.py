@@ -174,7 +174,7 @@ class TestListAPI(BaseTestAPI):
             ({'year__lte': 1}, (0, 1)),
             ({'year__gt': 2014, 'year__lt': 2025}, (30, 32)),
             ({'production': 'Toyota'}, ()),
-        )
+        ),
     )
     def test_filter(self, filters, expect_ids):
         models = [
