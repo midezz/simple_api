@@ -38,8 +38,6 @@ class ListAPI(APIView):
         query = session.query(self.model).filter(*filters)
         result = [self.model.get_columns_values(model) for model in query.all()]
         session.close()
-        if len(result) == 0:
-            return JSONResponse({'error': 'Not found'}, status_code=404)
         return JSONResponse(result)
 
 

@@ -139,3 +139,56 @@ class TestDeleteAPI(BaseTestAPI):
         self.session.commit()
         resp = self.client.delete(f'/{model.id + 1}')
         assert resp.status_code == 404
+
+
+@pytest.mark.parametrize('api_class, path', ((api.ListAPI, '/'),))
+class TestListAPI(BaseTestAPI):
+    def test_list(self):
+        models = [
+            Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n})
+            for n in range(30)
+        ]
+        self.session.add_all(models)
+        self.session.commit()
+        resp = self.client.get('/')
+        assert resp.status_code == 200
+        result = resp.json()
+        assert len(result) == len(models)
+        except_result = [Car.get_columns_values(model) for model in models]
+        assert result == except_result
+
+    def test_empty_list(self):
+        resp = self.client.get('/')
+        assert resp.status_code == 200
+        result = resp.json()
+        assert len(result) == 0
+
+    @pytest.mark.parametrize(
+        'filters, expect_ids',
+        (
+            ({'year': 2014}, (31,)),
+            ({'year__gt': 2014}, (30, 32, 33)),
+            ({'year__lt': 1}, (0,)),
+            ({'year__gte': 2021}, (30, 32, 33)),
+            ({'year__gt': 2021, 'production': 'Porsche'}, (33,)),
+            ({'year__lte': 1}, (0, 1)),
+            ({'year__gt': 2014, 'year__lt': 2025}, (30, 32)),
+            ({'production': 'Toyota'}, ()),
+        )
+    )
+    def test_filter(self, filters, expect_ids):
+        models = [
+            Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n})
+            for n in range(30)
+        ]
+        models.append(Car(name_model='Model 3', production='Tesla', year=2021))
+        models.append(Car(name_model='Octavia', production='Skoda', year=2014))
+        models.append(Car(name_model='Boxter', production='Porsche', year=2021))
+        models.append(Car(name_model='911', production='Porsche', year=2025))
+        self.session.add_all(models)
+        self.session.commit()
+        resp = self.client.get('/', params=filters)
+        assert resp.status_code == 200
+        result = resp.json()
+        expect = [Car.get_columns_values(models[i]) for i in expect_ids]
+        assert result == expect
