@@ -11,13 +11,15 @@ class UrlParams:
     error = None
 
     def __init__(self, model_class, params):
-        self.params = params
+        self.params = dict(params).copy()
+        self.filter_params = self.params.copy()
+        self.order_params = self.filter_params.pop('order', None)
         self.model_class = model_class
 
     @property
     def filters(self):
         res_filters = []
-        for param, value in self.params.items():
+        for param, value in self.filter_params.items():
             conditions = param.split('__')
             if len(conditions) > 1:
                 criterion = CONDITIONS.get(conditions[1])(
