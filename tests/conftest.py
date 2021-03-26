@@ -1,4 +1,5 @@
 from random import choices
+import inspect
 
 import pytest
 from sqlalchemy import Column, Integer, create_engine
@@ -7,6 +8,7 @@ from sqlalchemy_utils import create_database, drop_database
 from simple_api.endpoint import Endpoint
 from simple_api.main import SimpleApi
 from tests import models
+from simple_api.endpoint import ConfigEndpoint
 
 
 from .models import Base
@@ -63,3 +65,11 @@ def simple_api():
     return SimpleApi(
             models, 'postgresql://pydantic_orm:123456@127.0.0.1/pydantic_test'
         )
+
+
+@pytest.fixture(autouse=True)
+def reset_models_settings():
+    yield
+    for _, member in inspect.getmembers(models):
+        if inspect.isclass(member) and Endpoint in member.__bases__:
+            setattr(member, 'ConfigEndpoint', ConfigEndpoint())

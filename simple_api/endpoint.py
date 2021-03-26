@@ -54,7 +54,7 @@ class Endpoint:
         return {column: getattr(model, column) for column in columns}
 
 
-class ConfigEndpoint:
+class ConfigEndpoint():
     pagination = 100
     denied_methods = []
     path = None
@@ -73,7 +73,7 @@ class ConstructEndpoint(DeclarativeMeta):
     def __new__(mcl, name, base, namespace, **kwargs):
         if Endpoint in base:
             if not namespace.get('ConfigEndpoint'):
-                namespace['ConfigEndpoint'] = ConfigEndpoint
+                namespace['ConfigEndpoint'] = ConfigEndpoint()
             else:
                 for attr, val in ConfigEndpoint.get_attrs().items():
                     if not hasattr(namespace['ConfigEndpoint'], attr):
