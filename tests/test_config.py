@@ -2,7 +2,12 @@ from simple_api.endpoint import ConfigEndpoint
 
 
 def test_get_attrs():
-    expect = {'denied_methods': [], 'pagination': 100, 'path': None, 'exclude_fields': []}
+    expect = {
+        'denied_methods': [],
+        'pagination': 100,
+        'path': None,
+        'exclude_fields': [],
+    }
     assert ConfigEndpoint.get_attrs() == expect
 
 

@@ -50,11 +50,15 @@ class Endpoint:
 
     @classmethod
     def get_columns_values(cls, model):
-        columns = [c.name for c in cls.__table__.columns]
+        columns = [
+            c.name
+            for c in cls.__table__.columns
+            if c.name not in cls.ConfigEndpoint.exclude_fields
+        ]
         return {column: getattr(model, column) for column in columns}
 
 
-class ConfigEndpoint():
+class ConfigEndpoint:
     pagination = 100
     denied_methods = []
     path = None

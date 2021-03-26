@@ -1,7 +1,6 @@
 import pytest
 
 from simple_api.api import GetUpdateDeleteAPI, ListCreateAPI
-from simple_api.main import SimpleApi
 from tests import models
 
 
@@ -9,7 +8,7 @@ class TestMain:
     @pytest.fixture(autouse=True)
     def setup(self, simple_api):
         self.simple_api = simple_api
-        
+
     def test_get_models(self):
         assert len(self.simple_api.models) == 2
         assert models.Car in self.simple_api.models

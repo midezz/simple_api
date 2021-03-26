@@ -1,15 +1,13 @@
-from random import choices
 import inspect
+from random import choices
 
 import pytest
 from sqlalchemy import Column, Integer, create_engine
 from sqlalchemy_utils import create_database, drop_database
 
-from simple_api.endpoint import Endpoint
+from simple_api.endpoint import ConfigEndpoint, Endpoint
 from simple_api.main import SimpleApi
 from tests import models
-from simple_api.endpoint import ConfigEndpoint
-
 
 from .models import Base
 
@@ -62,9 +60,7 @@ def db_setup(db_url, engine):
 
 @pytest.fixture(scope='module')
 def simple_api():
-    return SimpleApi(
-            models, 'postgresql://pydantic_orm:123456@127.0.0.1/pydantic_test'
-        )
+    return SimpleApi(models, 'postgresql://pydantic_orm:123456@127.0.0.1/pydantic_test')
 
 
 @pytest.fixture(autouse=True)
