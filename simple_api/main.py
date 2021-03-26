@@ -3,7 +3,7 @@ import inspect
 from sqlalchemy import create_engine
 from starlette.applications import Starlette
 
-from .api import Session
+from simple_api import Session
 from .endpoint import Endpoint
 
 

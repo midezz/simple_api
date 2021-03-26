@@ -5,7 +5,9 @@ from sqlalchemy import Column, Integer, create_engine
 from sqlalchemy_utils import create_database, drop_database
 
 from simple_api.endpoint import Endpoint
+from simple_api.main import SimpleApi
 from tests import models
+
 
 from .models import Base
 
@@ -17,6 +19,7 @@ class ModelTest(models.Base, Endpoint):
         denied_methods = ['get', 'delete']
         pagination = 20
         path = '/test_path'
+        exclude_fields = ['id']
 
 
 @pytest.fixture
@@ -53,3 +56,10 @@ def db_setup(db_url, engine):
     Base.metadata.create_all(engine)
     yield
     drop_database(db_url)
+
+
+@pytest.fixture(scope='module')
+def simple_api():
+    return SimpleApi(
+            models, 'postgresql://pydantic_orm:123456@127.0.0.1/pydantic_test'
+        )

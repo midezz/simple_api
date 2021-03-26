@@ -58,6 +58,7 @@ class ConfigEndpoint:
     pagination = 100
     denied_methods = []
     path = None
+    exclude_fields = []
 
     @classmethod
     def get_attrs(cls):
