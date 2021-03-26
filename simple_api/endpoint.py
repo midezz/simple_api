@@ -10,6 +10,12 @@ class Endpoint:
         return cls.__name__.lower()
 
     @classmethod
+    def get_path(cls):
+        if cls.ConfigEndpoint.path:
+            return cls.ConfigEndpoint.path
+        return '/' + cls.__tablename__
+
+    @classmethod
     def get_listcreate_routes(cls):
         allowed_methods = []
         if 'post' not in cls.ConfigEndpoint.denied_methods:
@@ -20,7 +26,7 @@ class Endpoint:
             return None
         allowed_methods.sort()
         handler_class = HANDLER_CLASS_LISTCREATE[tuple(allowed_methods)]
-        path = '/' + cls.__tablename__
+        path = cls.get_path()
         return SimpleApiRouter(cls, path, handler_class)
 
     @classmethod
@@ -39,7 +45,7 @@ class Endpoint:
         handler_class = cls.get_handler_class()
         if not handler_class:
             return None
-        path = '/' + cls.__tablename__ + '/{id}'
+        path = cls.get_path() + '/{id}'
         return SimpleApiRouter(cls, path, handler_class)
 
     @classmethod
@@ -51,6 +57,7 @@ class Endpoint:
 class ConfigEndpoint:
     pagination = 100
     denied_methods = []
+    path = None
 
     @classmethod
     def get_attrs(cls):

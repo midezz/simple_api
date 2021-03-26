@@ -15,3 +15,6 @@ class TestMain:
         assert len(self.simple_api.models) == 2
         assert models.Car in self.simple_api.models
         assert models.CustomUser in self.simple_api.models
+
+    def test_construct_routes(self):
+        pass

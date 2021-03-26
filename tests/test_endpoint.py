@@ -4,6 +4,10 @@ from tests.models import CustomUser
 
 
 class TestEndpoint:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.model = CustomUser
+
     @pytest.mark.parametrize(
         'denied_methods, expected',
         (
@@ -17,15 +21,13 @@ class TestEndpoint:
         ),
     )
     def test_get_handler_class(self, denied_methods, expected):
-        model = CustomUser
-        model.ConfigEndpoint.denied_methods = denied_methods
-        assert model.get_handler_class().__name__ == expected
+        self.model.ConfigEndpoint.denied_methods = denied_methods
+        assert self.model.get_handler_class().__name__ == expected
 
     def test_get_listcreate_routes_is_none(self):
-        model = CustomUser
-        model.ConfigEndpoint.denied_methods = ['post']
-        model.ConfigEndpoint.pagination = 0
-        assert model.get_listcreate_routes() is None
+        self.model.ConfigEndpoint.denied_methods = ['post']
+        self.model.ConfigEndpoint.pagination = 0
+        assert self.model.get_listcreate_routes() is None
 
     @pytest.mark.parametrize(
         'denied_methods, pagination, expected_class',
@@ -36,17 +38,15 @@ class TestEndpoint:
         ),
     )
     def test_get_listcreate_routes(self, denied_methods, pagination, expected_class):
-        model = CustomUser
-        model.ConfigEndpoint.denied_methods = denied_methods
-        model.ConfigEndpoint.pagination = pagination
-        router = model.get_listcreate_routes()
+        self.model.ConfigEndpoint.denied_methods = denied_methods
+        self.model.ConfigEndpoint.pagination = pagination
+        router = self.model.get_listcreate_routes()
         assert router.path == '/' + CustomUser.__tablename__
         assert router.endpoint.__name__ == expected_class
 
     def test_all_other_methonds_not_allowed(self):
-        model = CustomUser
-        model.ConfigEndpoint.denied_methods = ['put', 'delete', 'get']
-        assert model.get_other_routes() is None
+        self.model.ConfigEndpoint.denied_methods = ['put', 'delete', 'get']
+        assert self.model.get_other_routes() is None
 
     @pytest.mark.parametrize(
         'denied_methods, expected_class',
@@ -61,8 +61,15 @@ class TestEndpoint:
         ),
     )
     def test_get_other_routes(self, denied_methods, expected_class):
-        model = CustomUser
-        model.ConfigEndpoint.denied_methods = denied_methods
-        router = model.get_other_routes()
+        self.model.ConfigEndpoint.denied_methods = denied_methods
+        router = self.model.get_other_routes()
         assert router.path == '/' + CustomUser.__tablename__ + '/{id}'
         assert router.endpoint.__name__ == expected_class
+
+    def test_get_path(self):
+        path = self.model.get_path()
+        assert path == '/customuser'
+
+    def test_configured_path(self):
+        self.model.ConfigEndpoint.path = '/test_path'
+        assert self.model.get_path() == '/test_path'

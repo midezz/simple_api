@@ -13,12 +13,12 @@ class SimpleApi:
 
     def __init__(self, models, db):
         self.get_models(models)
-        self.get_routes()
+        self.construct_routes()
         self.engine = create_engine(db)
         Session.configure(bind=self.engine)
         self.app = Starlette(debug=True, routes=self.routes)
 
-    def get_routes(self):
+    def construct_routes(self):
         for model in self.models:
             listcreate_routes = model.get_listcreate_routes()
             if listcreate_routes:

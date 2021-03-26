@@ -15,10 +15,12 @@ class ModelTest(models.Base, Endpoint):
 
     class ConfigEndpoint:
         denied_methods = ['get', 'delete']
+        pagination = 20
+        path = '/test_path'
 
 
 @pytest.fixture
-def single_model():
+def not_config_model():
     return models.CustomUser
 
 
@@ -28,7 +30,7 @@ def module_models():
 
 
 @pytest.fixture
-def class_modeltest():
+def configured_model():
     return ModelTest
 
 
