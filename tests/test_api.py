@@ -94,7 +94,7 @@ class TestCreateAPI(BaseTestAPI):
         data = {'name_model': 'test', 'production': 'new test', 'year': 'a'}
         resp = self.client.post('/', json=data)
         assert resp.status_code == 400
-        assert resp.json() == {'error': True}
+        assert resp.json() == {'errors': ['Bad request']}
         query = self.session.query(Car)
         assert query.count() == 0
 
@@ -192,3 +192,36 @@ class TestListAPI(BaseTestAPI):
         result = resp.json()
         expect = [Car.get_columns_values(models[i]) for i in expect_ids]
         assert result == expect
+
+    @pytest.mark.parametrize(
+        'order, expect_ids',
+        (
+            ({'order': 'year'}, (2, 1, 0)),
+            ({'order': 'id'}, (0, 1, 2)),
+            ({'order': '-id'}, (2, 1, 0)),
+        ),
+    )
+    def test_order(self, order, expect_ids):
+        models = [
+            Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n})
+            for n in range(3, 0, -1)
+        ]
+        self.session.add_all(models)
+        self.session.commit()
+        resp = self.client.get('/', params=order)
+        assert resp.status_code == 200
+        result = resp.json()
+        expect = [Car.get_columns_values(models[i]) for i in expect_ids]
+        assert result == expect
+
+    def test_noncorrect_request(self):
+        models = [
+            Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n})
+            for n in range(10)
+        ]
+        self.session.add_all(models)
+        self.session.commit()
+        resp = self.client.get('/', params={'test': 'test'})
+        assert resp.status_code == 400
+        result = resp.json()
+        assert result == {'errors': ["Filter 'test' is not valid"]}

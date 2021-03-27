@@ -8,12 +8,12 @@ CONDITIONS = {
 
 
 class UrlParams:
-    error = None
-
     def __init__(self, model_class, params):
+        self.errors = []
         self.params = dict(params).copy()
         self.filter_params = self.params.copy()
-        self.order_params = self.filter_params.pop('order', None)
+        self.order_param = self.filter_params.pop('order', None)
+        self.limit_param = self.filter_params.pop('limit', None)
         self.model_class = model_class
 
     @property
@@ -33,20 +33,38 @@ class UrlParams:
                 res_filters.append(criterion)
         return res_filters
 
+    @property
+    def order_by(self):
+        if self.order_param:
+            if self.order_param[0] == '-':
+                return getattr(self.model_class, self.order_param[1:]).desc()
+            return getattr(self.model_class, self.order_param)
+
+    @property
+    def columns(self):
+        return [c.name for c in self.model_class.__table__.columns]
+
     def valid_filters(self):
-        columns = [c.name for c in self.model_class.__table__.columns]
-        for filter in self.params:
+        for filter in self.filter_params:
             cur_filter = filter.split('__')
             if (
-                cur_filter[0] not in columns
+                cur_filter[0] not in self.columns
                 or len(cur_filter) > 1
                 and cur_filter[1] not in ('gte', 'gt', 'lte', 'lt')
             ):
-                self.error = f'Filter \'{filter}\' is not valid'
-                return False
-        return True
+                self.errors.append(f'Filter \'{filter}\' is not valid')
+
+    def valid_order(self):
+        if self.order_param:
+            order_by = (
+                self.order_param if self.order_param[0] != '-' else self.order_param[1:]
+            )
+            if order_by not in self.columns:
+                self.errors.append(f'Order by \'{self.order_param}\' is not valid')
 
     def is_valid(self):
-        if not self.valid_filters():
+        self.valid_filters()
+        self.valid_order()
+        if len(self.errors):
             return False
         return True

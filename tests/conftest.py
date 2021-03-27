@@ -6,7 +6,6 @@ from sqlalchemy import Column, Integer, create_engine
 from sqlalchemy_utils import create_database, drop_database
 
 from simple_api.endpoint import ConfigEndpoint, Endpoint
-from simple_api.main import SimpleApi
 from tests import models
 
 from .models import Base
@@ -56,11 +55,6 @@ def db_setup(db_url, engine):
     Base.metadata.create_all(engine)
     yield
     drop_database(db_url)
-
-
-@pytest.fixture(scope='module')
-def simple_api():
-    return SimpleApi(models, 'postgresql://pydantic_orm:123456@127.0.0.1/pydantic_test')
 
 
 @pytest.fixture(autouse=True)

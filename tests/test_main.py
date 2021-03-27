@@ -1,13 +1,16 @@
 import pytest
 
 from simple_api.api import GetUpdateDeleteAPI, ListCreateAPI
+from simple_api.main import SimpleApi
 from tests import models
 
 
 class TestMain:
     @pytest.fixture(autouse=True)
-    def setup(self, simple_api):
-        self.simple_api = simple_api
+    def setup(self):
+        self.simple_api = SimpleApi(
+            models, 'postgresql://pydantic_orm:123456@127.0.0.1/pydantic_test'
+        )
 
     def test_get_models(self):
         assert len(self.simple_api.models) == 2

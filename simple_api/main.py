@@ -9,10 +9,9 @@ from .endpoint import Endpoint
 
 
 class SimpleApi:
-    models = []
-    routes = []
-
     def __init__(self, models, db):
+        self.models = []
+        self.routes = []
         self.get_models(models)
         self.construct_routes()
         self.engine = create_engine(db)

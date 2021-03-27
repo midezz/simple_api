@@ -22,7 +22,7 @@ class CreateAPI(APIView):
             values = self.model.get_columns_values(model)
         except Exception:
             session.close()
-            return JSONResponse({'error': True}, status_code=400)
+            return JSONResponse({'errors': ['Bad request']}, status_code=400)
         else:
             session.close()
             return JSONResponse(values, status_code=201)
@@ -34,8 +34,10 @@ class ListAPI(APIView):
         params = UrlParams(self.model, request.query_params)
         if not params.is_valid():
             session.close()
-            return JSONResponse(params.error, status_code=400)
-        query = session.query(self.model).filter(*params.filters)
+            return JSONResponse({'errors': params.errors}, status_code=400)
+        query = (
+            session.query(self.model).filter(*params.filters).order_by(params.order_by)
+        )
         result = [self.model.get_columns_values(model) for model in query.all()]
         session.close()
         return JSONResponse(result)
@@ -52,10 +54,10 @@ class GetAPI(APIView):
             result = session.query(self.model).filter_by(**request.path_params).first()
         except Exception:
             session.close()
-            return JSONResponse({'error': True}, status_code=400)
+            return JSONResponse({'errors': ['Bad request']}, status_code=400)
         session.close()
         if not result:
-            return JSONResponse({'error': 'Not found'}, status_code=404)
+            return JSONResponse({'errors': ['Not found']}, status_code=404)
         values = self.model.get_columns_values(result)
         return JSONResponse(values)
 
