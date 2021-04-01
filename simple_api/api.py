@@ -38,6 +38,20 @@ class ListAPI(APIView):
         query = (
             session.query(self.model).filter(*params.filters).order_by(params.order_by)
         )
+        offset = (params.page_param - 1) * self.model.ConfigEndpoint.pagination
+        if params.limit_param is None:
+            query = query.offset(offset).limit(self.model.ConfigEndpoint.pagination)
+        else:
+            if (
+                params.limit_param <= offset + self.model.ConfigEndpoint.pagination
+                and params.limit_param > offset
+            ):
+                limit = params.limit_param - offset
+                query = query.offset(offset).limit(limit)
+            elif params.limit_param > offset + self.model.ConfigEndpoint.pagination:
+                query = query.offset(offset).limit(self.model.ConfigEndpoint.pagination)
+            else:
+                query = query.limit(0)
         result = [self.model.get_columns_values(model) for model in query.all()]
         session.close()
         return JSONResponse(result)

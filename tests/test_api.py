@@ -214,6 +214,31 @@ class TestListAPI(BaseTestAPI):
         expect = [Car.get_columns_values(models[i]) for i in expect_ids]
         assert result == expect
 
+    @pytest.mark.parametrize(
+        'limit, start, end',
+        (
+            ({'limit': 5}, 0, 5),
+            ({'page': 2}, 100, 200),
+            ({'page': 2, 'limit': 5}, 0, 0),
+            ({'page': 2, 'limit': 133}, 100, 133),
+            ({'page': 3, 'limit': 133}, 0, 0),
+            ({'page': 2, 'limit': 320}, 100, 200),
+            ({'page': 1, 'limit': 15}, 0, 15),
+        ),
+    )
+    def test_limit_page(self, limit, start, end):
+        models = [
+            Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n})
+            for n in range(330)
+        ]
+        self.session.add_all(models)
+        self.session.commit()
+        resp = self.client.get('/', params=limit)
+        assert resp.status_code == 200
+        result = resp.json()
+        expect = [Car.get_columns_values(models[i]) for i in range(start, end)]
+        assert result == expect
+
     def test_noncorrect_request(self):
         models = [
             Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n})

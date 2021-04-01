@@ -44,17 +44,36 @@ def test_valid_order(order, errors):
 
 
 @pytest.mark.parametrize(
+    'limit, errors',
+    (
+        ({'limit': 10}, []),
+        ({'limit': 'a'}, ['Limit parameter \'a\' is not correct']),
+    ),
+)
+def test_valid_number_parameter(limit, errors):
+    params = UrlParams(CustomUser, limit)
+    params.valid_number_parameter(params.limit_param, 'Limit')
+    assert params.errors == errors
+
+
+@pytest.mark.parametrize(
     'params, expected, errors',
     (
         ({'name': 'test'}, True, []),
         ({'name__gte': 'test'}, True, []),
         ({'order': 'name'}, True, []),
+        ({'limit': 10}, True, []),
+        ({'limit': 'a'}, False, ['Limit parameter \'a\' is not correct']),
         ({'order': 'test'}, False, ['Order by \'test\' is not valid']),
         ({'bla': 'test'}, False, ['Filter \'bla\' is not valid']),
         (
-            {'name__bla': 'test', 'order': 'test'},
+            {'name__bla': 'test', 'order': 'test', 'limit': 'a'},
             False,
-            ['Filter \'name__bla\' is not valid', 'Order by \'test\' is not valid'],
+            [
+                'Filter \'name__bla\' is not valid',
+                'Order by \'test\' is not valid',
+                'Limit parameter \'a\' is not correct',
+            ],
         ),
     ),
 )

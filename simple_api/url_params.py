@@ -14,6 +14,7 @@ class UrlParams:
         self.filter_params = self.params.copy()
         self.order_param = self.filter_params.pop('order', None)
         self.limit_param = self.filter_params.pop('limit', None)
+        self.page_param = self.filter_params.pop('page', 1)
         self.model_class = model_class
 
     @property
@@ -62,9 +63,23 @@ class UrlParams:
             if order_by not in self.columns:
                 self.errors.append(f'Order by \'{self.order_param}\' is not valid')
 
+    def valid_number_parameter(self, value, param_name):
+        if not value:
+            return
+        try:
+            value = int(value)
+        except ValueError:
+            self.errors.append(
+                f'{param_name} parameter \'{self.limit_param}\' is not correct'
+            )
+        else:
+            return value
+
     def is_valid(self):
         self.valid_filters()
         self.valid_order()
+        self.limit_param = self.valid_number_parameter(self.limit_param, 'Limit')
+        self.page_param = self.valid_number_parameter(self.page_param, 'Page')
         if len(self.errors):
             return False
         return True
