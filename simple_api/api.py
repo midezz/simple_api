@@ -5,6 +5,16 @@ from . import Session
 from .url_params import UrlParams
 
 
+def check_allowed_methods(method):
+    async def wrapper(self, request):
+        if method.__name__ in self.model.ConfigEndpoint.denied_methods:
+            return await self.method_not_allowed(request)
+        else:
+            return await method(self, request)
+
+    return wrapper
+
+
 class APIView(HTTPEndpoint):
     def __init__(self, model, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -62,6 +72,7 @@ class ListCreateAPI(ListAPI, CreateAPI):
 
 
 class GetAPI(APIView):
+    @check_allowed_methods
     async def get(self, request):
         session = Session()
         try:
@@ -77,11 +88,20 @@ class GetAPI(APIView):
 
 
 class UpdateAPI(APIView):
-    async def put(self, request):
+    def update(self, request):
         pass
+
+    @check_allowed_methods
+    async def put(self, request):
+        return self.update(request)
+
+    @check_allowed_methods
+    async def patch(self, request):
+        return self.update(request)
 
 
 class DeleteAPI(APIView):
+    @check_allowed_methods
     async def delete(self, request):
         session = Session()
         try:
@@ -102,27 +122,6 @@ class DeleteAPI(APIView):
 class GetUpdateDeleteAPI(GetAPI, UpdateAPI, DeleteAPI):
     pass
 
-
-class UpdateDeleteAPI(UpdateAPI, DeleteAPI):
-    pass
-
-
-class GetDeleteAPI(GetAPI, DeleteAPI):
-    pass
-
-
-class GetUpdateAPI(GetAPI, UpdateAPI):
-    pass
-
-
-HANDLER_CLASS = {
-    ('get',): UpdateDeleteAPI,
-    ('delete', 'put'): GetAPI,
-    ('delete',): GetUpdateAPI,
-    ('get', 'put'): DeleteAPI,
-    ('delete', 'get'): UpdateAPI,
-    ('put',): GetDeleteAPI,
-}
 
 HANDLER_CLASS_LISTCREATE = {
     ('list', 'post'): ListCreateAPI,

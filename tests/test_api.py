@@ -7,31 +7,22 @@ from simple_api.router import SimpleApiRouter
 
 from .models import Car
 
-DENIED_METHODS = {
-    'CreateAPI': ['get', 'put', 'delete'],
-    'ListAPI': ['post', 'put', 'delete'],
-    'ListCreateAPI': ['put', 'delete'],
-    'GetAPI': ['post', 'put', 'delete'],
-    'UpdateAPI': ['post', 'get', 'delete'],
-    'DeleteAPI': ['post', 'get', 'put'],
-    'GetUpdateDeleteAPI': ['post'],
-    'UpdateDeleteAPI': ['post', 'get'],
-    'GetDeleteAPI': ['post', 'put'],
-    'GetUpdateAPI': ['post', 'delete'],
-}
-
 
 @pytest.mark.usefixtures('db_setup')
 class BaseTestAPI:
+    api_class = api.GetUpdateDeleteAPI
+    denied_methods = []
+    path = '/'
+
     @pytest.fixture(autouse=True)
-    def setup(self, engine, api_class, path):
+    def setup(self, engine):
         self.connection = engine.connect()
         Session.configure(bind=self.connection)
         self.trans = self.connection.begin()
-        self.app = Starlette(routes=[SimpleApiRouter(Car, path, api_class)])
+        Car.ConfigEndpoint.denied_methods = self.denied_methods
+        self.app = Starlette(routes=[SimpleApiRouter(Car, self.path, self.api_class)])
         self.client = TestClient(self.app)
         self.session = Session()
-        self.api_class = api_class
 
     @pytest.fixture(autouse=True)
     def tearDown(self):
@@ -42,31 +33,35 @@ class BaseTestAPI:
 
 
 @pytest.mark.parametrize(
-    'api_class, path',
+    'api_class, denied_methods',
     (
-        (api.CreateAPI, '/'),
-        (api.ListAPI, '/'),
-        (api.ListCreateAPI, '/'),
-        (api.GetAPI, '/'),
-        (api.UpdateAPI, '/'),
-        (api.DeleteAPI, '/'),
-        (api.GetUpdateDeleteAPI, '/'),
-        (api.UpdateDeleteAPI, '/'),
-        (api.GetDeleteAPI, '/'),
-        (api.GetUpdateAPI, '/'),
+        (api.CreateAPI, ['get', 'put', 'delete', 'patch']),
+        (api.ListAPI, ['post', 'put', 'delete', 'patch']),
+        (api.ListCreateAPI, ['put', 'delete', 'patch']),
+        (api.GetUpdateDeleteAPI, ['post']),
+        (api.GetUpdateDeleteAPI, ['get']),
+        (api.GetUpdateDeleteAPI, ['put']),
+        (api.GetUpdateDeleteAPI, ['delete']),
+        (api.GetUpdateDeleteAPI, ['patch']),
     ),
 )
 class TestDeniedMethods(BaseTestAPI):
+    @pytest.fixture(autouse=True)
+    def pre_setup(self, api_class, denied_methods):
+        self.api_class = api_class
+        self.denied_methods = denied_methods
+
     def test_methods(self):
-        for method in DENIED_METHODS[self.api_class.__name__]:
+        for method in self.denied_methods:
             method_call = getattr(self.client, method)
             resp = method_call('/')
             assert resp.status_code == 405
             assert resp.content == b'Method Not Allowed'
 
 
-@pytest.mark.parametrize('api_class, path', ((api.CreateAPI, '/'),))
 class TestCreateAPI(BaseTestAPI):
+    api_class = api.CreateAPI
+
     def test_post(self):
         data = {'name_model': 'test', 'production': 'new test', 'year': 100}
         resp = self.client.post('/', json=data)
@@ -99,8 +94,9 @@ class TestCreateAPI(BaseTestAPI):
         assert query.count() == 0
 
 
-@pytest.mark.parametrize('api_class, path', ((api.GetAPI, '/{id}'),))
 class TestGetAPI(BaseTestAPI):
+    path = '/{id}'
+
     def test_get(self):
         data = {'name_model': 'test', 'production': 'new test', 'year': 100}
         model = Car(**data)
@@ -119,8 +115,9 @@ class TestGetAPI(BaseTestAPI):
         assert resp.status_code == 404
 
 
-@pytest.mark.parametrize('api_class, path', ((api.DeleteAPI, '/{id}'),))
 class TestDeleteAPI(BaseTestAPI):
+    path = '/{id}'
+
     def test_delete(self):
         data = {'name_model': 'test', 'production': 'new test', 'year': 100}
         model = Car(**data)
@@ -141,8 +138,9 @@ class TestDeleteAPI(BaseTestAPI):
         assert resp.status_code == 404
 
 
-@pytest.mark.parametrize('api_class, path', ((api.ListAPI, '/'),))
 class TestListAPI(BaseTestAPI):
+    api_class = api.ListAPI
+
     def test_list(self):
         models = [
             Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n})

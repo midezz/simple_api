@@ -8,22 +8,6 @@ class TestEndpoint:
     def setup(self):
         self.model = CustomUser
 
-    @pytest.mark.parametrize(
-        'denied_methods, expected',
-        (
-            (['get', 'post'], 'UpdateDeleteAPI'),
-            (['put', 'delete'], 'GetAPI'),
-            (['get', 'post', 'delete'], 'UpdateAPI'),
-            ([], 'GetUpdateDeleteAPI'),
-            (['post', 'delete'], 'GetUpdateAPI'),
-            (['put'], 'GetDeleteAPI'),
-            (['put', 'get'], 'DeleteAPI'),
-        ),
-    )
-    def test_get_handler_class(self, denied_methods, expected):
-        self.model.ConfigEndpoint.denied_methods = denied_methods
-        assert self.model.get_handler_class().__name__ == expected
-
     def test_get_listcreate_routes_is_none(self):
         self.model.ConfigEndpoint.denied_methods = ['post']
         self.model.ConfigEndpoint.pagination = 0
@@ -44,27 +28,10 @@ class TestEndpoint:
         assert router.path == '/' + CustomUser.__tablename__
         assert router.endpoint.__name__ == expected_class
 
-    def test_all_other_methonds_not_allowed(self):
-        self.model.ConfigEndpoint.denied_methods = ['put', 'delete', 'get']
-        assert self.model.get_other_routes() is None
-
-    @pytest.mark.parametrize(
-        'denied_methods, expected_class',
-        (
-            (['get'], 'UpdateDeleteAPI'),
-            (['get', 'delete'], 'UpdateAPI'),
-            (['delete'], 'GetUpdateAPI'),
-            (['put'], 'GetDeleteAPI'),
-            (['put', 'delete'], 'GetAPI'),
-            (['post'], 'GetUpdateDeleteAPI'),
-            ([], 'GetUpdateDeleteAPI'),
-        ),
-    )
-    def test_get_other_routes(self, denied_methods, expected_class):
-        self.model.ConfigEndpoint.denied_methods = denied_methods
+    def test_get_other_routes(self):
         router = self.model.get_other_routes()
         assert router.path == '/' + CustomUser.__tablename__ + '/{id}'
-        assert router.endpoint.__name__ == expected_class
+        assert router.endpoint.__name__ == 'GetUpdateDeleteAPI'
 
     def test_get_path(self):
         path = self.model.get_path()

@@ -1,6 +1,6 @@
 from sqlalchemy.ext.declarative import DeclarativeMeta, declared_attr
 
-from .api import HANDLER_CLASS, HANDLER_CLASS_LISTCREATE, GetUpdateDeleteAPI
+from .api import HANDLER_CLASS_LISTCREATE, GetUpdateDeleteAPI
 from .router import SimpleApiRouter
 
 
@@ -34,17 +34,13 @@ class Endpoint:
         denied_methods = cls.ConfigEndpoint.denied_methods[:]
         if 'post' in denied_methods:
             denied_methods.remove('post')
-        if len(denied_methods) == 3:
+        if len(denied_methods) == 4:
             return None
-        denied_methods.sort()
-        denied_methods = tuple(denied_methods)
-        return HANDLER_CLASS.get(denied_methods, GetUpdateDeleteAPI)
+        return GetUpdateDeleteAPI
 
     @classmethod
     def get_other_routes(cls):
-        handler_class = cls.get_handler_class()
-        if not handler_class:
-            return None
+        handler_class = GetUpdateDeleteAPI
         path = cls.get_path() + '/{id}'
         return SimpleApiRouter(cls, path, handler_class)
 
