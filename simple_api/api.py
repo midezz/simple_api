@@ -71,36 +71,7 @@ class ListCreateAPI(ListAPI, CreateAPI):
     pass
 
 
-class GetAPI(APIView):
-    @check_allowed_methods
-    async def get(self, request):
-        session = Session()
-        try:
-            result = session.query(self.model).filter_by(**request.path_params).first()
-        except Exception:
-            session.close()
-            return JSONResponse({'errors': ['Bad request']}, status_code=400)
-        session.close()
-        if not result:
-            return JSONResponse({'errors': ['Not found']}, status_code=404)
-        values = self.model.get_columns_values(result)
-        return JSONResponse(values)
-
-
-class UpdateAPI(APIView):
-    def update(self, request):
-        pass
-
-    @check_allowed_methods
-    async def put(self, request):
-        return self.update(request)
-
-    @check_allowed_methods
-    async def patch(self, request):
-        return self.update(request)
-
-
-class DeleteAPI(APIView):
+class GetUpdateDeleteAPI(APIView):
     @check_allowed_methods
     async def delete(self, request):
         session = Session()
@@ -118,9 +89,45 @@ class DeleteAPI(APIView):
         values = self.model.get_columns_values(result)
         return JSONResponse(values)
 
+    @check_allowed_methods
+    async def get(self, request):
+        session = Session()
+        try:
+            result = session.query(self.model).filter_by(**request.path_params).first()
+        except Exception:
+            session.close()
+            return JSONResponse({'errors': ['Bad request']}, status_code=400)
+        session.close()
+        if not result:
+            return JSONResponse({'errors': ['Not found']}, status_code=404)
+        values = self.model.get_columns_values(result)
+        return JSONResponse(values)
 
-class GetUpdateDeleteAPI(GetAPI, UpdateAPI, DeleteAPI):
-    pass
+    async def update(self, request):
+        data = await request.json()
+        session = Session()
+        try:
+            result = (
+                session.query(self.model).filter_by(**request.path_params).update(data)
+            )
+            session.commit()
+        except Exception:
+            session.close()
+            return JSONResponse({'errors': ['Bad request']}, status_code=400)
+        session.close()
+        if not result:
+            return JSONResponse({'errors': ['Not found']}, status_code=404)
+        values = request.path_params.copy()
+        values.update(data)
+        return JSONResponse(values)
+
+    @check_allowed_methods
+    async def put(self, request):
+        return await self.update(request)
+
+    @check_allowed_methods
+    async def patch(self, request):
+        return await self.update(request)
 
 
 HANDLER_CLASS_LISTCREATE = {

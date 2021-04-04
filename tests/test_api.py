@@ -94,7 +94,7 @@ class TestCreateAPI(BaseTestAPI):
         assert query.count() == 0
 
 
-class TestGetAPI(BaseTestAPI):
+class TestGetUpdateDeleteAPI(BaseTestAPI):
     path = '/{id}'
 
     def test_get(self):
@@ -114,10 +114,6 @@ class TestGetAPI(BaseTestAPI):
         resp = self.client.get(f'/{model.id + 1}')
         assert resp.status_code == 404
 
-
-class TestDeleteAPI(BaseTestAPI):
-    path = '/{id}'
-
     def test_delete(self):
         data = {'name_model': 'test', 'production': 'new test', 'year': 100}
         model = Car(**data)
@@ -136,6 +132,49 @@ class TestDeleteAPI(BaseTestAPI):
         self.session.commit()
         resp = self.client.delete(f'/{model.id + 1}')
         assert resp.status_code == 404
+
+    @pytest.mark.parametrize('method', ('put', 'patch'))
+    def test_update(self, method):
+        data = {'name_model': 'Model 3', 'production': 'Tesla', 'year': 2022}
+        model = Car(**data)
+        self.session.add(model)
+        self.session.commit()
+        request_method = getattr(self.client, method)
+        resp = request_method(
+            f'/{model.id}', json={'year': 2020, 'name_model': 'Model 1'}
+        )
+        self.session.refresh(model)
+        assert resp.status_code == 200
+        assert resp.json() == {
+            'id': str(model.id),
+            'year': 2020,
+            'name_model': 'Model 1',
+        }
+        assert model.year == 2020
+        assert model.name_model == 'Model 1'
+        assert model.production == 'Tesla'
+
+    @pytest.mark.parametrize('method', ('put', 'patch'))
+    @pytest.mark.parametrize(
+        'id, status_code, error, payload',
+        (
+            (0, 400, 'Bad request', {'year': 2020, 'test_name_model': 'Model 1'}),
+            (1, 404, 'Not found', {'year': 2020, 'name_model': 'Model 1'}),
+        ),
+    )
+    def test_update_bad_request(self, method, id, status_code, error, payload):
+        data = {'name_model': 'Model 3', 'production': 'Tesla', 'year': 2022}
+        model = Car(**data)
+        self.session.add(model)
+        self.session.commit()
+        request_method = getattr(self.client, method)
+        resp = request_method(f'/{model.id+id}', json=payload)
+        self.session.refresh(model)
+        assert resp.status_code == status_code
+        assert resp.json().get('errors') == [error]
+        assert model.year == 2022
+        assert model.name_model == 'Model 3'
+        assert model.production == 'Tesla'
 
 
 class TestListAPI(BaseTestAPI):
