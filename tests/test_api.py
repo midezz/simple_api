@@ -270,6 +270,7 @@ class TestListAPI(BaseTestAPI):
         ]
         self.session.add_all(models)
         self.session.commit()
+        limit.update({'order': 'id'})
         resp = self.client.get('/', params=limit)
         assert resp.status_code == 200
         result = resp.json()
