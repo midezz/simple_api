@@ -8,14 +8,14 @@ from .endpoint import Endpoint
 
 
 class SimpleApi:
-    def __init__(self, models, db):
+    def __init__(self, models, db, debug=True):
         self.models = []
         self.routes = []
         self.get_models(models)
         self.construct_routes()
         self.engine = create_engine(db)
         Session.configure(bind=self.engine)
-        self.app = Starlette(debug=True, routes=self.routes)
+        self.app = Starlette(debug=debug, routes=self.routes)
 
     def construct_routes(self):
         for model in self.models:
