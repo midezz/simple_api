@@ -1,6 +1,12 @@
-# simple_api
+# SimpleApi
 
 SimpleAPI is the library for launch REST API based on your SQLAlchemy models.
+
+**Features**
+
+* Minimum code. You don't need create any endpoints. All of you need is your SQLAlchemy models.
+* You can customize your endpoints. For example, you can deny some methods or customize the endpoint's path.
+* Under hood SimpleApi use Starlette.
 
 **Installation**
 
@@ -8,10 +14,10 @@ SimpleAPI is the library for launch REST API based on your SQLAlchemy models.
 pip install simple_api
 ```
 
-Also you need install unicorn.
+Also you need install uvicorn.
 
 ```console
-pip install unicorn
+pip install uvicorn
 ```
 
 
@@ -68,6 +74,7 @@ INFO:     Application startup complete.
 
 4. Use REST API
 You can use methods GET, POST, PUT, PATCH, DELETE in endpoints:
-* http://127.0.0.1:8000/car - GET for retrieve list of models.Car items, support filters, expample ?name=SomeName, POST for create new item in DB
-* http://127.0.0.1:8000/car/1 - GET for retrieve one item with id=1, also you can use PUT, PATCH for update item, DELETE for delete item from DB
+* http://127.0.0.1:8000/car - GET for retrieve list of models.Car items, support filters, expample ?name=SomeName, POST for create new item in DB.
+* http://127.0.0.1:8000/car/1 - GET for retrieve one item with id=1, also you can use PUT, PATCH for update item, DELETE for delete item from DB.
+
 Similar endpoints are availible for all you models.

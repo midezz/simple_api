@@ -12,9 +12,6 @@ class CustomUser(Base, Endpoint):
     surname = Column(String)
     age = Column(Integer)
 
-    class ConfigEndpoint:
-        denied_methods = ['post']
-
 
 class Car(Base, Endpoint):
     id = Column(Integer, primary_key=True)
