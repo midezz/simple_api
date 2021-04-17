@@ -1,4 +1,5 @@
 import inspect
+import os
 from random import choices
 
 import pytest
@@ -37,24 +38,26 @@ def configured_model():
 
 
 @pytest.fixture(scope='session')
+def db_url_test(db_url):
+    return db_url + '_' + ''.join(choices('0123456789', k=20))
+
+
+@pytest.fixture(scope='session')
 def db_url():
-    db = 'postgresql://pydantic_orm:123456@127.0.0.1'
-    db_name = 'test_' + ''.join(choices('0123456789', k=20))
-    url = f'{db}/{db_name}'
-    return url
+    return os.environ.get('DB_URL')
 
 
 @pytest.fixture(scope='session')
-def engine(db_url):
-    return create_engine(db_url)
+def engine(db_url_test):
+    return create_engine(db_url_test)
 
 
 @pytest.fixture(scope='session')
-def db_setup(db_url, engine):
-    create_database(db_url)
+def db_setup(db_url_test, engine):
+    create_database(db_url_test)
     Base.metadata.create_all(engine)
     yield
-    drop_database(db_url)
+    drop_database(db_url_test)
 
 
 @pytest.fixture(autouse=True)
