@@ -39,15 +39,13 @@ class CustomUser(Base, Endpoint):
     surname = Column(String)
     age = Column(Integer)
 
-    class ConfigEndpoint:
-        denied_methods = ['post']
-
 
 class Car(Base, Endpoint):
     id = Column(Integer, primary_key=True)
     name_model = Column(String)
     production = Column(String)
     year = Column(Integer)
+
 ```
 
 2. Create `app.py`
@@ -60,6 +58,7 @@ import models
 from simple_api.main import SimpleApi
 
 app = SimpleApi(models, db='postgresql://db_user:db_pass@127.0.0.1/db_name')
+
 ```
 
 3. Run application
