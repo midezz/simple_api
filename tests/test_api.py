@@ -5,11 +5,12 @@ from starlette.testclient import TestClient
 from simple_api import Session, api
 from simple_api.router import SimpleApiRouter
 
+from .base import TestBaseApi
 from .models import Car
 
 
 @pytest.mark.usefixtures('db_setup')
-class BaseTestAPI:
+class BaseTestAPIClass(TestBaseApi):
     api_class = api.GetUpdateDeleteAPI
     denied_methods = []
     path = '/'
@@ -23,13 +24,6 @@ class BaseTestAPI:
         self.app = Starlette(routes=[SimpleApiRouter(Car, self.path, self.api_class)])
         self.client = TestClient(self.app)
         self.session = Session()
-
-    @pytest.fixture(autouse=True)
-    def tearDown(self):
-        yield
-        self.session.close()
-        self.trans.rollback()
-        self.connection.close()
 
 
 @pytest.mark.parametrize(
@@ -45,7 +39,7 @@ class BaseTestAPI:
         (api.GetUpdateDeleteAPI, ['patch']),
     ),
 )
-class TestDeniedMethods(BaseTestAPI):
+class TestDeniedMethods(BaseTestAPIClass):
     @pytest.fixture(autouse=True)
     def pre_setup(self, api_class, denied_methods):
         self.api_class = api_class
@@ -59,19 +53,12 @@ class TestDeniedMethods(BaseTestAPI):
             assert resp.content == b'Method Not Allowed'
 
 
-class TestCreateAPI(BaseTestAPI):
+class TestCreateAPI(BaseTestAPIClass):
     api_class = api.CreateAPI
 
     def test_post(self):
         data = {'name_model': 'test', 'production': 'new test', 'year': 100}
-        resp = self.client.post('/', json=data)
-        assert resp.status_code == 201
-        data['id'] = 1
-        query = self.session.query(Car)
-        assert query.count() == 1
-        item = Car.get_columns_values(query.first())
-        assert item == data
-        assert resp.json() == data
+        self.assert_post_test(data, Car, '/')
 
     @pytest.mark.parametrize(
         'data',
@@ -94,40 +81,25 @@ class TestCreateAPI(BaseTestAPI):
         assert query.count() == 0
 
 
-class TestGetUpdateDeleteAPI(BaseTestAPI):
+class TestGetUpdateDeleteAPI(BaseTestAPIClass):
     path = '/{id}'
+    data = {'name_model': 'test', 'production': 'new test', 'year': 100}
 
     def test_get(self):
-        data = {'name_model': 'test', 'production': 'new test', 'year': 100}
-        model = Car(**data)
-        self.session.add(model)
-        self.session.commit()
-        resp = self.client.get(f'/{model.id}')
-        assert resp.status_code == 200
-        assert resp.json() == Car.get_columns_values(model)
+        self.assert_get_test(self.data, Car, '')
 
     def test_get_not_found(self):
-        data = {'name_model': 'test', 'production': 'new test', 'year': 100}
-        model = Car(**data)
+        model = Car(**self.data)
         self.session.add(model)
         self.session.commit()
         resp = self.client.get(f'/{model.id + 1}')
         assert resp.status_code == 404
 
     def test_delete(self):
-        data = {'name_model': 'test', 'production': 'new test', 'year': 100}
-        model = Car(**data)
-        self.session.add(model)
-        self.session.commit()
-        resp = self.client.delete(f'/{model.id}')
-        assert resp.status_code == 200
-        assert resp.json() == Car.get_columns_values(model)
-        query = self.session.query(Car)
-        assert query.count() == 0
+        self.assert_delete_test(self.data, Car, '')
 
     def test_delete_not_found(self):
-        data = {'name_model': 'test', 'production': 'new test', 'year': 100}
-        model = Car(**data)
+        model = Car(**self.data)
         self.session.add(model)
         self.session.commit()
         resp = self.client.delete(f'/{model.id + 1}')
@@ -177,7 +149,7 @@ class TestGetUpdateDeleteAPI(BaseTestAPI):
         assert model.production == 'Tesla'
 
 
-class TestListAPI(BaseTestAPI):
+class TestListAPI(BaseTestAPIClass):
     api_class = api.ListAPI
 
     def test_list(self):
