@@ -71,9 +71,9 @@ INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 ```
 
-4. Use REST API
+4. Use REST API<br>
 You can use methods GET, POST, PUT, PATCH, DELETE in endpoints:
-* http://127.0.0.1:8000/car - GET for retrieve list of models.Car items, support filters, expample ?name=SomeName, POST for create new item in DB.
-* http://127.0.0.1:8000/car/1 - GET for retrieve one item with id=1, also you can use PUT, PATCH for update item, DELETE for delete item from DB.
+* http://127.0.0.1:8000/car - GET for retrieve list of `models.Car` items, support filters in url, example `?name=SomeName`, POST for create new item in DB.
+* http://127.0.0.1:8000/car/1 - GET for retrieve one item with `id=1`, also you can use PUT, PATCH for update item, DELETE for delete item from DB.<br>
 
 Similar endpoints are availible for all you models.
