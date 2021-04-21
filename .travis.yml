@@ -1,0 +1,12 @@
+language: python
+services:
+  - postgresql
+env:
+  - DB_URL=postgresql://postgres@127.0.0.1/test_db
+install:
+  - pip install -r requirements.txt
+script:
+  - flake8 .
+  - isort -c .
+  - black --check .
+  - pytest
