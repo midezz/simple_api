@@ -5,52 +5,20 @@ from simple_api import Session
 from simple_api.main import SimpleApi
 from tests import models
 
+from .base import TestBaseApi
+
 
 @pytest.mark.usefixtures('db_setup')
-class TestSimpleApi:
+class TestSimpleApi(TestBaseApi):
     @pytest.fixture(autouse=True)
     def setup(self, engine, db_url_test):
-        self.connection = engine.connect()
+        self.engine = engine
+        self.connection = self.engine.connect()
         self.trans = self.connection.begin()
         self.app = SimpleApi(models, db_url_test)
         Session.configure(bind=self.connection)
         self.client = TestClient(self.app.app)
         self.session = Session()
-
-    @pytest.fixture(autouse=True)
-    def tearDown(self):
-        yield
-        self.session.close()
-        self.trans.rollback()
-        self.connection.close()
-
-    def assert_get_test(self, data, model_use, path):
-        model = model_use(**data)
-        self.session.add(model)
-        self.session.commit()
-        resp = self.client.get(f'{path}/{model.id}')
-        assert resp.status_code == 200
-        assert resp.json() == model_use.get_columns_values(model)
-
-    def assert_post_test(self, data, model_use, path):
-        resp = self.client.post(path, json=data)
-        assert resp.status_code == 201
-        query = self.session.query(model_use)
-        assert query.count() == 1
-        item = model_use.get_columns_values(query.first())
-        data['id'] = item['id']
-        assert item == data
-        assert resp.json() == data
-
-    def assert_delete_test(self, data, model_use, path):
-        model = model_use(**data)
-        self.session.add(model)
-        self.session.commit()
-        resp = self.client.delete(f'{path}/{model.id}')
-        assert resp.status_code == 200
-        assert resp.json() == model_use.get_columns_values(model)
-        query = self.session.query(model_use)
-        assert query.count() == 0
 
     def assert_not_found(self, resp):
         assert resp.content == b'Not Found'
@@ -141,6 +109,24 @@ class TestCustomizePath(TestSimpleApi):
     def test_get_custom_path(self, data, model_use, path):
         self.assert_get_test(data, model_use, path)
 
+    @pytest.mark.parametrize(
+        'data, model_use, path',
+        (
+            (
+                {'name_model': 'test_1', 'production': 'new test 22', 'year': 200},
+                models.Car,
+                '/new_car_path',
+            ),
+            (
+                {'name': 'Ivan_1', 'surname': 'Petrov_1', 'age': 35},
+                models.CustomUser,
+                '/new_user_path',
+            ),
+        ),
+    )
+    def test_post_custom_path(self, data, model_use, path):
+        self.assert_post_test(data, model_use, path)
+
     @pytest.mark.parametrize('path', ('/car', '/customuser'))
     def test_old_path(self, path):
         resp = self.client.get(path)
@@ -168,3 +154,5 @@ class TestDeniedMethods(TestSimpleApi):
         method = getattr(self.client, self.methond)
         resp = method(self.path)
         assert resp.status_code == 405
+        self.assert_other_methods(models.CustomUser, '/customuser')
+        self.assert_other_methods(models.Car, '/car')
