@@ -1,4 +1,4 @@
-<img src="https://travis-ci.com/midezz/simple_api.svg?branch=master">
+<img src="https://travis-ci.com/midezz/simple_api.svg?branch=master"> <a href="https://badge.fury.io/py/simplerestapi"><img src="https://badge.fury.io/py/simplerestapi.svg" alt="PyPI version" height="18"></a>
 
 # SimpleRestApi
 
