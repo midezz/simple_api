@@ -2,4 +2,5 @@
 max-line-length = 88
 exclude = 
     venv,
-    __pycache__
+    __pycache__,
+    docs
