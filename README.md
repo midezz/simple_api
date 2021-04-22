@@ -1,3 +1,5 @@
+<img src="https://travis-ci.com/midezz/simple_api.svg?branch=master">
+
 # SimpleApi
 
 SimpleAPI is the library for launch REST API based on your SQLAlchemy models.
