@@ -1,8 +1,10 @@
 <img src="https://travis-ci.com/midezz/simple_api.svg?branch=master">
 
-# SimpleApi
+# SimpleRestApi
 
 SimpleAPI is the library for launch REST API based on your SQLAlchemy models.
+
+**Documentation:** <a href="https://simplerestapi.readthedocs.io/en/latest/">https://simplerestapi.readthedocs.io/en/latest/</a>
 
 **Features**
 
@@ -13,7 +15,7 @@ SimpleAPI is the library for launch REST API based on your SQLAlchemy models.
 **Installation**
 
 ```console
-pip install simple_api
+pip install simplerestapi
 ```
 
 Also you need install uvicorn.
@@ -30,7 +32,7 @@ pip install uvicorn
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
-from simple_api.endpoint import ConstructEndpoint, Endpoint
+from simplerestapi.endpoint import ConstructEndpoint, Endpoint
 
 Base = declarative_base(metaclass=ConstructEndpoint)
 
@@ -57,7 +59,7 @@ import os
 import uvicorn
 
 import models
-from simple_api.main import SimpleApi
+from simplerestapi.main import SimpleApi
 
 app = SimpleApi(models, db='postgresql://db_user:db_pass@127.0.0.1/db_name')
 
@@ -75,7 +77,7 @@ INFO:     Application startup complete.
 
 4. Use REST API<br>
 You can use methods GET, POST, PUT, PATCH, DELETE in endpoints:
-* http://127.0.0.1:8000/car - GET for retrieve list of models.Car items, support filters, example `?name=SomeName`, POST for create new item in DB.
+* http://127.0.0.1:8000/car - GET for retrieve list of `models.Car` items, support filters, example `?name=SomeName`, POST for create new item in DB.
 * http://127.0.0.1:8000/car/1 - GET for retrieve one item with id=1, also you can use PUT, PATCH for update item, DELETE for delete item from DB.
 
 Similar endpoints are availible for all you models.
