@@ -2,8 +2,8 @@ import pytest
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 
-from simple_api import Session, api
-from simple_api.router import SimpleApiRouter
+from src.simplerestapi import Session, api
+from src.simplerestapi.router import SimpleApiRouter
 
 from .base import TestBaseApi
 from .models import Car

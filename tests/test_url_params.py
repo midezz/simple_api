@@ -1,6 +1,6 @@
 import pytest
 
-from simple_api.url_params import UrlParams
+from src.simplerestapi.url_params import UrlParams
 from tests.models import CustomUser
 
 

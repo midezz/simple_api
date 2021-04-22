@@ -1,4 +1,4 @@
-from simple_api.endpoint import ConfigEndpoint
+from src.simplerestapi.endpoint import ConfigEndpoint
 
 
 def test_get_attrs():

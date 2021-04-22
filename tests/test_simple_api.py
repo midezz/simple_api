@@ -1,8 +1,8 @@
 import pytest
 from starlette.testclient import TestClient
 
-from simple_api import Session
-from simple_api.main import SimpleApi
+from src.simplerestapi import Session
+from src.simplerestapi.main import SimpleApi
 from tests import models
 
 from .base import TestBaseApi
