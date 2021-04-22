@@ -2,7 +2,7 @@
 
 # SimpleRestApi
 
-SimpleAPI is the library for launch REST API based on your SQLAlchemy models.
+SimpleRestAPI is the library for launch REST API based on your SQLAlchemy models.
 
 **Documentation:** <a href="https://simplerestapi.readthedocs.io/en/latest/">https://simplerestapi.readthedocs.io/en/latest/</a>
 

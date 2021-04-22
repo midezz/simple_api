@@ -20,7 +20,7 @@ exclude = '''
     | build
     | dist
   )/
-  
+  | setup.py
 )
 '''
 skip-string-normalization = true
