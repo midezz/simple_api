@@ -1,4 +1,6 @@
-<img src="https://travis-ci.com/midezz/simple_api.svg?branch=master"> <a href="https://badge.fury.io/py/simplerestapi"><img src="https://badge.fury.io/py/simplerestapi.svg" alt="PyPI version" height="18"></a>
+<img src="https://travis-ci.com/midezz/simple_api.svg?branch=master"> <a href="https://badge.fury.io/py/simplerestapi"><img src="https://badge.fury.io/py/simplerestapi.svg" alt="PyPI version" height="18"></a><a href='https://simplerestapi.readthedocs.io/en/latest/?badge=latest'>
+    <img src='https://readthedocs.org/projects/simplerestapi/badge/?version=latest' alt='Documentation Status' />
+</a>
 
 # SimpleRestApi
 
