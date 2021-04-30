@@ -1,15 +1,13 @@
-Welcome to SimpleApi's documentation!
-=====================================
+Welcome to SimpleRestApi's documentation!
+===========================================
 
 SimpleAPI is the library for launch REST API based on your SQLAlchemy models.
 
 .. toctree::
+   :hidden:
 
-   test
-   test2
-
-
-   
+   config
+  
 
 
  
@@ -63,6 +61,12 @@ Usage
          production = Column(String)
          year = Column(Integer)
 
+You need to add ``metaclass=ConstructEndpoint`` to parameters `declarative_base` and to inherit your table class from ``Endpoint``.
+
+You don't need to add attribute ``__tablename__`` to your table class, because the name of the table is constructed automatic like ``cls.__name__.lower()``.
+
+You can add ``class ConfigEndpoint`` to config your endpoint, for more information see :ref:`config`.
+
 2. Create ``app.py``
    
 .. code-block:: python
@@ -75,6 +79,8 @@ Usage
    from simple_api.main import SimpleApi
 
    app = SimpleApi(models, db='postgresql://db_user:db_pass@127.0.0.1/db_name')
+
+You can use the parameter `debug=False` to turn off debug mode.
 
 3. Run application
    
@@ -90,6 +96,6 @@ Usage
 
 4. Use REST API. You can use methods GET, POST, PUT, PATCH, DELETE in endpoints:
 
-   * http://127.0.0.1:8000/car - GET for retrieve list of `models.Car` items, support filters in url, example `?name=SomeName`, POST for create new item in DB.
-   * http://127.0.0.1:8000/car/1 - GET for retrieve one item with `id=1`, also you can use PUT, PATCH for update item, DELETE for delete item from DB.<br>
+   * http://127.0.0.1:8000/car - GET for retrieve list of ``models.Car`` items, support filters in url, example ``?name=SomeName``, POST for create new item in DB.
+   * http://127.0.0.1:8000/car/1 - GET for retrieve one item with ``id=1``, also you can use PUT, PATCH for update item, DELETE for delete item from DB.
    * Similar endpoints are availible for all you models.
