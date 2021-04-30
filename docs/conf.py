@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 master_doc = "index"
-project = 'SimpleApi'
+project = 'SimpleRestApi'
 copyright = '2021, Andrey Nikulin'
 author = 'Andrey Nikulin'
 
