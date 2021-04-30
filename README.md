@@ -52,6 +52,12 @@ class Car(Base, Endpoint):
 
 ```
 
+You need to add ``metaclass=ConstructEndpoint`` to parameters `declarative_base` and to inherit your table class from ``Endpoint``.
+
+You don't need to add attribute ``__tablename__`` to your table class, because the name of the table is constructed automatic like ``cls.__name__.lower()``.
+
+You can add ``class ConfigEndpoint`` to config your endpoint, for more information see <a href="https://simplerestapi.readthedocs.io/en/latest/config.html"> Configuration endpoint </a>.
+
 2. Create `app.py`
 ```Python
 import os
@@ -64,6 +70,8 @@ from simplerestapi.main import SimpleApi
 app = SimpleApi(models, db='postgresql://db_user:db_pass@127.0.0.1/db_name')
 
 ```
+
+You can use the parameter `debug=False` to turn off debug mode.
 
 3. Run application
 ```console
