@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import Column, Integer, create_engine
 from sqlalchemy_utils import create_database, drop_database
 
-from src.simplerestapi.endpoint import ConfigEndpoint, Endpoint
+from simplerestapi.endpoint import ConfigEndpoint, Endpoint
 from tests import models
 
 from .models import Base

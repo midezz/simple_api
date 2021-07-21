@@ -2,8 +2,8 @@ import pytest
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 
-from src.simplerestapi import Session, api
-from src.simplerestapi.router import SimpleApiRouter
+from simplerestapi import Session, api
+from simplerestapi.router import SimpleApiRouter
 
 from .base import TestBaseApi
 from .models import Car
@@ -64,6 +64,7 @@ class TestCreateAPI(BaseTestAPIClass):
         'data',
         (
             {'name_model': 'test', 'production': 'new test', 'year': 'a'},
+            {'name_model': 'test'},
             {
                 'name_model': 'test',
                 'production': 'new test',
@@ -73,7 +74,6 @@ class TestCreateAPI(BaseTestAPIClass):
         ),
     )
     def test_bad_request(self, data):
-        data = {'name_model': 'test', 'production': 'new test', 'year': 'a'}
         resp = self.client.post('/', json=data)
         assert resp.status_code == 400
         assert resp.json() == {'errors': ['Bad request']}

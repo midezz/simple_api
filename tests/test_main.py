@@ -1,7 +1,7 @@
 import pytest
 
-from src.simplerestapi.api import GetUpdateDeleteAPI, ListCreateAPI
-from src.simplerestapi.main import SimpleApi
+from simplerestapi.api import GetUpdateDeleteAPI, ListCreateAPI
+from simplerestapi.main import SimpleApi
 from tests import models
 
 
