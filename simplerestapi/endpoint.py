@@ -1,6 +1,7 @@
 from sqlalchemy.ext.declarative import DeclarativeMeta, declared_attr
 
 from .api import HANDLER_CLASS_LISTCREATE, GetUpdateDeleteAPI
+from .model_validator import ModelValidator
 from .router import SimpleApiRouter
 
 
@@ -52,6 +53,10 @@ class Endpoint:
             if c.name not in cls.ConfigEndpoint.exclude_fields
         ]
         return {column: getattr(model, column) for column in columns}
+
+    @classmethod
+    def validate_model(cls):
+        return ModelValidator(cls).errors
 
 
 class ConfigEndpoint:
