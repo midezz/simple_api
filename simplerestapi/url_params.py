@@ -23,14 +23,10 @@ class UrlParams:
         for param, value in self.filter_params.items():
             conditions = param.split('__')
             if len(conditions) > 1:
-                criterion = CONDITIONS.get(conditions[1])(
-                    getattr(self.model_class, conditions[0]), value
-                )
+                criterion = CONDITIONS.get(conditions[1])(getattr(self.model_class, conditions[0]), value)
                 res_filters.append(criterion)
             else:
-                criterion = CONDITIONS.get('equal')(
-                    getattr(self.model_class, conditions[0]), value
-                )
+                criterion = CONDITIONS.get('equal')(getattr(self.model_class, conditions[0]), value)
                 res_filters.append(criterion)
         return res_filters
 
@@ -57,9 +53,7 @@ class UrlParams:
 
     def valid_order(self):
         if self.order_param:
-            order_by = (
-                self.order_param if self.order_param[0] != '-' else self.order_param[1:]
-            )
+            order_by = self.order_param if self.order_param[0] != '-' else self.order_param[1:]
             if order_by not in self.columns:
                 self.errors.append(f'Order by \'{self.order_param}\' is not valid')
 
@@ -69,9 +63,7 @@ class UrlParams:
         try:
             value = int(value)
         except ValueError:
-            self.errors.append(
-                f'{param_name} parameter \'{self.limit_param}\' is not correct'
-            )
+            self.errors.append(f'{param_name} parameter \'{self.limit_param}\' is not correct')
         else:
             return value
 

@@ -11,6 +11,8 @@ from tests import models
 
 from .models import Base
 
+ERROR_TEMPLATE = 'Model \'{0}\' has incorrect ConfigEndpoint parameter \'{1}\': {2}'
+
 
 class TestExampleConfigEndpoint:
     denied_methods = ['get', 'delete']

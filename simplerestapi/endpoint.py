@@ -47,11 +47,7 @@ class Endpoint:
 
     @classmethod
     def get_columns_values(cls, model):
-        columns = [
-            c.name
-            for c in cls.__table__.columns
-            if c.name not in cls.ConfigEndpoint.exclude_fields
-        ]
+        columns = [c.name for c in cls.__table__.columns if c.name not in cls.ConfigEndpoint.exclude_fields]
         return {column: getattr(model, column) for column in columns}
 
     @classmethod
@@ -67,11 +63,7 @@ class ConfigEndpoint:
 
     @classmethod
     def get_attrs(cls):
-        return {
-            attr: getattr(cls, attr)
-            for attr in cls.__dict__
-            if attr.find('__') == -1 and attr != 'get_attrs'
-        }
+        return {attr: getattr(cls, attr) for attr in cls.__dict__ if attr.find('__') == -1 and attr != 'get_attrs'}
 
 
 class ConstructEndpoint(DeclarativeMeta):
