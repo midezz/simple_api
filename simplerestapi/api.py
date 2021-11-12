@@ -45,17 +45,12 @@ class ListAPI(APIView):
         if not params.is_valid():
             session.close()
             return JSONResponse({'errors': params.errors}, status_code=400)
-        query = (
-            session.query(self.model).filter(*params.filters).order_by(params.order_by)
-        )
+        query = session.query(self.model).filter(*params.filters).order_by(params.order_by)
         offset = (params.page_param - 1) * self.model.ConfigEndpoint.pagination
         if params.limit_param is None:
             query = query.offset(offset).limit(self.model.ConfigEndpoint.pagination)
         else:
-            if (
-                params.limit_param <= offset + self.model.ConfigEndpoint.pagination
-                and params.limit_param > offset
-            ):
+            if params.limit_param <= offset + self.model.ConfigEndpoint.pagination and params.limit_param > offset:
                 limit = params.limit_param - offset
                 query = query.offset(offset).limit(limit)
             elif params.limit_param > offset + self.model.ConfigEndpoint.pagination:
@@ -107,9 +102,7 @@ class GetUpdateDeleteAPI(APIView):
         data = await request.json()
         session = Session()
         try:
-            result = (
-                session.query(self.model).filter_by(**request.path_params).update(data)
-            )
+            result = session.query(self.model).filter_by(**request.path_params).update(data)
             session.commit()
         except Exception:
             session.close()

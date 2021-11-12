@@ -5,13 +5,16 @@ from starlette.applications import Starlette
 
 from . import Session
 from .endpoint import Endpoint
+from .exception import ConfigEndpointError
 
 
 class SimpleApi:
     def __init__(self, models, db, debug=True):
+        self.model_errors = []
         self.models = []
         self.routes = []
         self.get_models(models)
+        self.raise_exceptions_by_errors()
         self.construct_routes()
         self.engine = create_engine(db)
         Session.configure(bind=self.engine)
@@ -29,4 +32,9 @@ class SimpleApi:
     def get_models(self, models):
         for _, member in inspect.getmembers(models):
             if inspect.isclass(member) and Endpoint in member.__bases__:
+                self.model_errors += member.validate_model()
                 self.models.append(member)
+
+    def raise_exceptions_by_errors(self):
+        if self.model_errors:
+            raise ConfigEndpointError('Your models have errors:', self.model_errors)

@@ -6,11 +6,12 @@ with open('README.md', 'r', encoding='utf-8') as fh:
 requirements = [
     'SQLAlchemy>1.3.0,<=1.3.23',
     'starlette>0.13.0,<=0.14.2',
+    'pydantic>1.7,<=1.8',
 ]
 
 setuptools.setup(
     name='simplerestapi',
-    version='1.0.1',
+    version='1.0.2',
     author='Andrey Nikulin',
     author_email='midezz@gmail.com',
     description='SimpleRestAPI is the library for launch REST API based on your SQLAlchemy models',
@@ -37,7 +38,6 @@ setuptools.setup(
 
     ],
     install_requires=requirements,
-    package_dir={'': 'src'},
-    packages=setuptools.find_packages(where='src'),
+    packages=['simplerestapi'],
     python_requires='>3.6',
 )

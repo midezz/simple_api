@@ -2,8 +2,8 @@ import pytest
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 
-from src.simplerestapi import Session, api
-from src.simplerestapi.router import SimpleApiRouter
+from simplerestapi import Session, api
+from simplerestapi.router import SimpleApiRouter
 
 from .base import TestBaseApi
 from .models import Car
@@ -64,6 +64,7 @@ class TestCreateAPI(BaseTestAPIClass):
         'data',
         (
             {'name_model': 'test', 'production': 'new test', 'year': 'a'},
+            {'name_model': 'test'},
             {
                 'name_model': 'test',
                 'production': 'new test',
@@ -73,7 +74,6 @@ class TestCreateAPI(BaseTestAPIClass):
         ),
     )
     def test_bad_request(self, data):
-        data = {'name_model': 'test', 'production': 'new test', 'year': 'a'}
         resp = self.client.post('/', json=data)
         assert resp.status_code == 400
         assert resp.json() == {'errors': ['Bad request']}
@@ -112,9 +112,7 @@ class TestGetUpdateDeleteAPI(BaseTestAPIClass):
         self.session.add(model)
         self.session.commit()
         request_method = getattr(self.client, method)
-        resp = request_method(
-            f'/{model.id}', json={'year': 2020, 'name_model': 'Model 1'}
-        )
+        resp = request_method(f'/{model.id}', json={'year': 2020, 'name_model': 'Model 1'})
         self.session.refresh(model)
         assert resp.status_code == 200
         assert resp.json() == {
@@ -153,10 +151,7 @@ class TestListAPI(BaseTestAPIClass):
     api_class = api.ListAPI
 
     def test_list(self):
-        models = [
-            Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n})
-            for n in range(30)
-        ]
+        models = [Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n}) for n in range(30)]
         self.session.add_all(models)
         self.session.commit()
         resp = self.client.get('/')
@@ -186,10 +181,7 @@ class TestListAPI(BaseTestAPIClass):
         ),
     )
     def test_filter(self, filters, expect_ids):
-        models = [
-            Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n})
-            for n in range(30)
-        ]
+        models = [Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n}) for n in range(30)]
         models.append(Car(name_model='Model 3', production='Tesla', year=2021))
         models.append(Car(name_model='Octavia', production='Skoda', year=2014))
         models.append(Car(name_model='Boxter', production='Porsche', year=2021))
@@ -211,10 +203,7 @@ class TestListAPI(BaseTestAPIClass):
         ),
     )
     def test_order(self, order, expect_ids):
-        models = [
-            Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n})
-            for n in range(3, 0, -1)
-        ]
+        models = [Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n}) for n in range(3, 0, -1)]
         self.session.add_all(models)
         self.session.commit()
         resp = self.client.get('/', params=order)
@@ -236,10 +225,7 @@ class TestListAPI(BaseTestAPIClass):
         ),
     )
     def test_limit_page(self, limit, start, end):
-        models = [
-            Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n})
-            for n in range(330)
-        ]
+        models = [Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n}) for n in range(330)]
         self.session.add_all(models)
         self.session.commit()
         limit.update({'order': 'id'})
@@ -250,10 +236,7 @@ class TestListAPI(BaseTestAPIClass):
         assert result == expect
 
     def test_noncorrect_request(self):
-        models = [
-            Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n})
-            for n in range(10)
-        ]
+        models = [Car(**{'name_model': f'test{n}', 'production': f'new test{n}', 'year': n}) for n in range(10)]
         self.session.add_all(models)
         self.session.commit()
         resp = self.client.get('/', params={'test': 'test'})

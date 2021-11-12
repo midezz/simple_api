@@ -6,20 +6,26 @@ import pytest
 from sqlalchemy import Column, Integer, create_engine
 from sqlalchemy_utils import create_database, drop_database
 
-from src.simplerestapi.endpoint import ConfigEndpoint, Endpoint
+from simplerestapi.endpoint import ConfigEndpoint, Endpoint
 from tests import models
 
 from .models import Base
+
+ERROR_TEMPLATE = 'Model \'{0}\' has incorrect ConfigEndpoint parameter \'{1}\': {2}'
+
+
+class TestExampleConfigEndpoint:
+    denied_methods = ['get', 'delete']
+    pagination = 20
+    path = '/test_path'
+    exclude_fields = ['id']
 
 
 class ModelTest(models.Base, Endpoint):
     id = Column(Integer, primary_key=True)
 
-    class ConfigEndpoint:
-        denied_methods = ['get', 'delete']
-        pagination = 20
-        path = '/test_path'
-        exclude_fields = ['id']
+
+ModelTest.ConfigEndpoint = TestExampleConfigEndpoint()
 
 
 @pytest.fixture
@@ -66,3 +72,4 @@ def reset_models_settings():
     for _, member in inspect.getmembers(models):
         if inspect.isclass(member) and Endpoint in member.__bases__:
             setattr(member, 'ConfigEndpoint', ConfigEndpoint())
+    setattr(ModelTest, 'ConfigEndpoint', TestExampleConfigEndpoint())

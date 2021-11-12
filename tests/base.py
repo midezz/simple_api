@@ -2,7 +2,7 @@ from random import randint
 
 import pytest
 
-from src.simplerestapi import Session
+from simplerestapi import Session
 
 
 def get_data(model_use):
