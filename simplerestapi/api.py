@@ -1,4 +1,3 @@
-from pydantic_sqlalchemy import sqlalchemy_to_pydantic
 from starlette.endpoints import HTTPEndpoint
 from starlette.responses import JSONResponse
 
@@ -20,13 +19,11 @@ class APIView(HTTPEndpoint):
     def __init__(self, model, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model = model
-        self.pydantic_model = sqlalchemy_to_pydantic(model)
 
 
 class CreateAPI(APIView):
     async def post(self, request):
         data = await request.json()
-        # model = self.pydantic_model(**data)
         session = Session()
         try:
             model = self.model(**data)
