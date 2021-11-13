@@ -1,11 +1,14 @@
+from typing import List, Union
+
 from pydantic import BaseModel, validator
 
 
 class BaseConfigEndpoint(BaseModel):
     pagination: int = 100
-    denied_methods: list = []
+    denied_methods: List[str] = []
     path: str = None
-    exclude_fields: list = []
+    exclude_fields: List[str] = []
+    join_related: Union[bool, List[str]] = []
 
     @validator('denied_methods')
     def denied_methods_validate(cls, v):
@@ -27,7 +30,7 @@ class ModelValidator:
 
     def validate_config_endpoint(self, model):
         base_config_properties = set(BaseConfigEndpoint.schema()['properties'])
-        model_config_properties = {key for key in model.ConfigEndpoint.__dict__ if not key.startswith('__')}
+        model_config_properties = {key for key in model.ConfigEndpoint.get_attrs()}
         config_properties = {key: getattr(model.ConfigEndpoint, key) for key in base_config_properties}
         if len(model_config_properties - base_config_properties) > 0:
             msg = '\'{0}\': not support parameters'

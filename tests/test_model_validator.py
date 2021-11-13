@@ -1,5 +1,7 @@
 import pytest
 
+from simplerestapi.endpoint import ConfigEndpoint
+
 from .conftest import ERROR_TEMPLATE
 
 
@@ -43,7 +45,11 @@ from .conftest import ERROR_TEMPLATE
     ),
 )
 def test_validate_config_endpoint(configuration_endpoint, expected_errors, configured_model):
+    class TestConfig:
+        pass
+
     for key, val in configuration_endpoint.items():
-        setattr(configured_model.ConfigEndpoint, key, val)
+        setattr(TestConfig, key, val)
+    setattr(configured_model, 'ConfigEndpoint', ConfigEndpoint(current_config=TestConfig, namespace={}))
     errors = configured_model.validate_model()
     assert errors == expected_errors

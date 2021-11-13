@@ -15,17 +15,23 @@ ERROR_TEMPLATE = 'Model \'{0}\' has incorrect ConfigEndpoint parameter \'{1}\': 
 
 
 class TestExampleConfigEndpoint:
-    denied_methods = ['get', 'delete']
-    pagination = 20
-    path = '/test_path'
-    exclude_fields = ['id']
+    def __init__(self):
+        self.denied_methods = ['get', 'delete']
+        self.pagination = 20
+        self.path = '/test_path'
+        self.exclude_fields = ['id']
+        self.join_related = True
 
 
 class ModelTest(models.Base, Endpoint):
     id = Column(Integer, primary_key=True)
 
-
-ModelTest.ConfigEndpoint = TestExampleConfigEndpoint()
+    class ConfigEndpoint:
+        denied_methods = ['get', 'delete']
+        pagination = 20
+        path = '/test_path'
+        exclude_fields = ['id']
+        join_related = True
 
 
 @pytest.fixture
@@ -72,4 +78,8 @@ def reset_models_settings():
     for _, member in inspect.getmembers(models):
         if inspect.isclass(member) and Endpoint in member.__bases__:
             setattr(member, 'ConfigEndpoint', ConfigEndpoint())
-    setattr(ModelTest, 'ConfigEndpoint', TestExampleConfigEndpoint())
+    setattr(
+        ModelTest,
+        'ConfigEndpoint',
+        ConfigEndpoint(current_config=TestExampleConfigEndpoint(), namespace=ModelTest.__dict__),
+    )

@@ -1,4 +1,7 @@
+from functools import cached_property
+
 from sqlalchemy.ext.declarative import DeclarativeMeta, declared_attr
+from sqlalchemy.orm.relationships import RelationshipProperty
 
 from .api import HANDLER_CLASS_LISTCREATE, GetUpdateDeleteAPI
 from .model_validator import ModelValidator
@@ -56,14 +59,44 @@ class Endpoint:
 
 
 class ConfigEndpoint:
-    pagination = 100
-    denied_methods = []
-    path = None
-    exclude_fields = []
+    def __init__(self, current_config=None, namespace=None):
+        self.pagination = 100
+        self.denied_methods = []
+        self.path = None
+        self.exclude_fields = []
+        self.namespace = namespace
+        self.current_config = current_config
+        if current_config:
+            self.apply_config()
 
-    @classmethod
-    def get_attrs(cls):
-        return {attr: getattr(cls, attr) for attr in cls.__dict__ if attr.find('__') == -1 and attr != 'get_attrs'}
+    def get_attrs(self):
+        return {
+            attr: getattr(self, attr)
+            for attr in {'pagination', 'denied_methods', 'path', 'exclude_fields', 'join_related'}
+            | self.current_config_attrs
+        }
+
+    @cached_property
+    def current_config_attrs(self):
+        if self.current_config is None:
+            return set()
+        return {
+            attr for attr in self.current_config.__dict__ if attr.find('__') == -1 and attr not in ('join_related',)
+        }
+
+    def apply_config(self):
+        for attr in self.current_config_attrs:
+            parameter = getattr(self.current_config, attr, None)
+            setattr(self, attr, parameter)
+
+    @cached_property
+    def join_related(self):
+        if self.namespace is None:
+            return []
+        join_related = getattr(self.current_config, 'join_related', [])
+        if join_related is True:
+            return [field for field, val in self.namespace.items() if isinstance(val, RelationshipProperty)]
+        return join_related
 
 
 class ConstructEndpoint(DeclarativeMeta):
@@ -72,7 +105,7 @@ class ConstructEndpoint(DeclarativeMeta):
             if not namespace.get('ConfigEndpoint'):
                 namespace['ConfigEndpoint'] = ConfigEndpoint()
             else:
-                for attr, val in ConfigEndpoint.get_attrs().items():
-                    if not hasattr(namespace['ConfigEndpoint'], attr):
-                        setattr(namespace['ConfigEndpoint'], attr, val)
+                namespace['ConfigEndpoint'] = ConfigEndpoint(
+                    current_config=namespace['ConfigEndpoint'], namespace=namespace
+                )
         return super().__new__(mcl, name, base, namespace, **kwargs)
