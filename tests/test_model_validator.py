@@ -42,6 +42,14 @@ from .conftest import ERROR_TEMPLATE
             {'pagination': -2},
             [ERROR_TEMPLATE.format('ModelTest', 'pagination', 'value must be above or equal 0')],
         ),
+        (
+            {'join_related': False},
+            [ERROR_TEMPLATE.format('ModelTest', 'join_related', 'value must be True or List[str]')],
+        ),
+        (
+            {'join_related': None},
+            [ERROR_TEMPLATE.format('ModelTest', 'join_related', 'none is not an allowed value')],
+        ),
     ),
 )
 def test_validate_config_endpoint(configuration_endpoint, expected_errors, configured_model):

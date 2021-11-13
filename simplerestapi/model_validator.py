@@ -21,6 +21,11 @@ class BaseConfigEndpoint(BaseModel):
         if v < 0:
             raise ValueError('value must be above or equal 0')
 
+    @validator('join_related')
+    def join_related_validate(cls, v):
+        if v is False:
+            raise ValueError('value must be True or List[str]')
+
 
 class ModelValidator:
     def __init__(self, model):

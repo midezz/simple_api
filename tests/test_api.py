@@ -159,7 +159,7 @@ class TestListAPI(BaseTestAPIClass):
         assert resp.status_code == 200
         result = resp.json()
         assert len(result) == len(models)
-        except_result = [Car.get_columns_values(model) for model in models]
+        except_result = [model.get_columns_values() for model in models]
         assert result == except_result
 
     def test_empty_list(self):
@@ -192,7 +192,7 @@ class TestListAPI(BaseTestAPIClass):
         resp = self.client.get('/', params=filters)
         assert resp.status_code == 200
         result = resp.json()
-        expect = [Car.get_columns_values(models[i]) for i in expect_ids]
+        expect = [models[i].get_columns_values() for i in expect_ids]
         assert result == expect
 
     @pytest.mark.parametrize(
@@ -210,7 +210,7 @@ class TestListAPI(BaseTestAPIClass):
         resp = self.client.get('/', params=order)
         assert resp.status_code == 200
         result = resp.json()
-        expect = [Car.get_columns_values(models[i]) for i in expect_ids]
+        expect = [models[i].get_columns_values() for i in expect_ids]
         assert result == expect
 
     @pytest.mark.parametrize(
@@ -233,7 +233,7 @@ class TestListAPI(BaseTestAPIClass):
         resp = self.client.get('/', params=limit)
         assert resp.status_code == 200
         result = resp.json()
-        expect = [Car.get_columns_values(models[i]) for i in range(start, end)]
+        expect = [models[i].get_columns_values() for i in range(start, end)]
         assert result == expect
 
     def test_noncorrect_request(self):

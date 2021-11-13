@@ -1,6 +1,8 @@
+from unittest.mock import Mock
+
 import pytest
 
-from tests.models import CustomUser
+from tests.models import Car, CustomUser
 
 
 class TestEndpoint:
@@ -43,8 +45,28 @@ class TestEndpoint:
 
     def test_get_columns_value(self):
         item = self.model(name='Jon', surname='Dow', age=22)
-        values = self.model.get_columns_values(item)
+        values = item.get_columns_values()
         assert values == {'age': 22, 'id': None, 'name': 'Jon', 'surname': 'Dow'}
+
+    def test_get_columns_value_with_relative(self):
+        item = self.model(name='Jon', surname='Dow', age=22)
+        item.car = [
+            Car(name_model='Car 1', production='Production 1', year=2015),
+            Car(name_model='Car 2', production='Production 2', year=2018),
+        ]
+        setattr(item, 'ConfigEndpoint', Mock(join_related=['car'], exclude_fields=[]))
+        values = item.get_columns_values()
+        expected = {
+            'id': None,
+            'name': 'Jon',
+            'surname': 'Dow',
+            'age': 22,
+            'car': [
+                {'id': None, 'name_model': 'Car 1', 'production': 'Production 1', 'year': 2015, 'customuser_id': None},
+                {'id': None, 'name_model': 'Car 2', 'production': 'Production 2', 'year': 2018, 'customuser_id': None},
+            ],
+        }
+        assert values == expected
 
     @pytest.mark.parametrize(
         'exclude_fields, expect',
@@ -57,5 +79,5 @@ class TestEndpoint:
     def test_get_columns_values_with_exclude_fields(self, exclude_fields, expect):
         self.model.ConfigEndpoint.exclude_fields = exclude_fields
         item = self.model(name='Jon', surname='Dow', age=22)
-        values = self.model.get_columns_values(item)
+        values = item.get_columns_values()
         assert values == expect

@@ -44,14 +44,14 @@ class TestBaseApi:
         self.session.commit()
         resp = self.client.get(f'{path}/{model.id}')
         assert resp.status_code == 200
-        assert resp.json() == model_use.get_columns_values(model)
+        assert resp.json() == model.get_columns_values()
 
     def assert_post_test(self, data_payload, data_response, model_use, path):
         resp = self.client.post(path, json=data_payload)
         assert resp.status_code == 201
         query = self.session.query(model_use)
         assert query.count() == 1
-        item = model_use.get_columns_values(query.first())
+        item = query.first().get_columns_values()
         data_response['id'] = item['id']
         assert item == data_response
         assert resp.json() == data_response
@@ -62,7 +62,7 @@ class TestBaseApi:
         self.session.commit()
         resp = self.client.delete(f'{path}/{model.id}')
         assert resp.status_code == 200
-        assert resp.json() == model_use.get_columns_values(model)
+        assert resp.json() == model.get_columns_values()
         query = self.session.query(model_use)
         assert query.count() == 0
 

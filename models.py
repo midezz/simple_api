@@ -1,5 +1,8 @@
-from sqlalchemy import Column, Integer, String, create_engine
+import os
+
+from sqlalchemy import Column, ForeignKey, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 from simplerestapi.endpoint import ConstructEndpoint, Endpoint
 
@@ -11,6 +14,10 @@ class CustomUser(Base, Endpoint):
     name = Column(String)
     surname = Column(String)
     age = Column(Integer)
+    car = relationship('Car')
+
+    class ConfigEndpoint:
+        join_related = ['car']
 
 
 class Car(Base, Endpoint):
@@ -18,10 +25,15 @@ class Car(Base, Endpoint):
     name_model = Column(String)
     production = Column(String)
     year = Column(Integer)
+    customuser_id = Column(Integer, ForeignKey('customuser.id'))
+    customuser = relationship('CustomUser')
+
+    class ConfigEndpoint:
+        join_related = ['customuser']
 
 
 if __name__ == '__main__':
     print('Start creating tables')
-    engine = create_engine('postgresql://pydantic_orm:123456@127.0.0.1/pydantic_test')
+    engine = create_engine(os.environ['DB_URL'])
     Base.metadata.create_all(engine)
     print('Tables created')

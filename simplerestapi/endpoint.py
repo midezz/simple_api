@@ -1,11 +1,10 @@
-from functools import cached_property
-
 from sqlalchemy.ext.declarative import DeclarativeMeta, declared_attr
 from sqlalchemy.orm.relationships import RelationshipProperty
 
 from .api import HANDLER_CLASS_LISTCREATE, GetUpdateDeleteAPI
 from .model_validator import ModelValidator
 from .router import SimpleApiRouter
+from .utils import cached_property
 
 
 class Endpoint:
@@ -48,10 +47,27 @@ class Endpoint:
         path = cls.get_path() + '/{id}'
         return SimpleApiRouter(cls, path, handler_class)
 
+    def get_columns_values(self, next_relative_level=True):
+        columns = [c.name for c in self.__table__.columns if c.name not in self.ConfigEndpoint.exclude_fields]
+        result = {column: getattr(self, column) for column in columns}
+        if next_relative_level:
+            result.update(self.retreive_related())
+        return result
+
+    def retreive_related(self):
+        related = {}
+        for field in self.ConfigEndpoint.join_related:
+            model = getattr(self, field)
+            if isinstance(model, list):
+                related_values = [item.get_columns_values(next_relative_level=False) for item in model]
+            else:
+                related_values = model.get_columns_values(next_relative_level=False)
+            related[field] = related_values
+        return related
+
     @classmethod
-    def get_columns_values(cls, model):
-        columns = [c.name for c in cls.__table__.columns if c.name not in cls.ConfigEndpoint.exclude_fields]
-        return {column: getattr(model, column) for column in columns}
+    def get_joins(cls):
+        return [getattr(cls, column) for column in cls.ConfigEndpoint.join_related]
 
     @classmethod
     def validate_model(cls):
