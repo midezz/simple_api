@@ -21,3 +21,4 @@ class Car(Base, Endpoint):
     production = Column(String)
     year = Column(Integer, nullable=False)
     customuser_id = Column(Integer, ForeignKey('customuser.id'))
+    customuser = relationship('CustomUser')

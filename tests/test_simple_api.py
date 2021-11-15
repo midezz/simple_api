@@ -26,6 +26,10 @@ class TestSimpleApi(TestBaseApi):
 
 
 class TestBase(TestSimpleApi):
+    @pytest.fixture(autouse=True)
+    def pre_setup(self):
+        models.Car._config_endpoint(exclude_fields=['customuser_id'])
+
     @pytest.mark.parametrize(
         'data, model_use, path',
         (
@@ -49,7 +53,7 @@ class TestBase(TestSimpleApi):
         (
             (
                 {'name_model': 'Model 3', 'production': 'Tesla', 'year': 1},
-                {'name_model': 'Model 3', 'production': 'Tesla', 'year': 1, 'customuser_id': None},
+                {'name_model': 'Model 3', 'production': 'Tesla', 'year': 1},
                 models.Car,
                 '/car',
             ),
@@ -90,8 +94,8 @@ class TestBase(TestSimpleApi):
 class TestCustomizePath(TestSimpleApi):
     @pytest.fixture(autouse=True)
     def pre_setup(self):
-        models.Car.ConfigEndpoint.path = '/new_car_path'
-        models.CustomUser.ConfigEndpoint.path = '/new_user_path'
+        models.Car._config_endpoint(path='/new_car_path', exclude_fields=['customuser_id'])
+        models.CustomUser._config_endpoint(path='/new_user_path')
 
     @pytest.mark.parametrize(
         'data, model_use, path',
@@ -116,7 +120,7 @@ class TestCustomizePath(TestSimpleApi):
         (
             (
                 {'name_model': 'test_1', 'production': 'new test 22', 'year': 200},
-                {'name_model': 'test_1', 'production': 'new test 22', 'year': 200, 'customuser_id': None},
+                {'name_model': 'test_1', 'production': 'new test 22', 'year': 200},
                 models.Car,
                 '/new_car_path',
             ),
@@ -152,8 +156,7 @@ class TestDeniedMethods(TestSimpleApi):
     def pre_setup(self, method, path):
         self.methond = method
         self.path = path
-        models.Car.ConfigEndpoint.denied_methods = [method]
-        models.Car.ConfigEndpoint.exclude_fields = ['customuser_id']
+        models.Car._config_endpoint(denied_methods=[method], exclude_fields=['customuser_id'])
 
     def test_denied_method(self):
         method = getattr(self.client, self.methond)

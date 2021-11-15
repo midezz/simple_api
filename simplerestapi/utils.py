@@ -1,5 +1,5 @@
 def cached_property(func):
-    def item_property(self):
+    def get_property(self):
         if hasattr(self, f'_{func.__name__}'):
             return getattr(self, f'_{func.__name__}')
         else:
@@ -7,4 +7,7 @@ def cached_property(func):
             setattr(self, f'_{func.__name__}', parameter)
             return parameter
 
-    return property(item_property)
+    def set_property(self, value):
+        setattr(self, f'_{func.__name__}', value)
+
+    return property(get_property, set_property)

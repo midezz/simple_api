@@ -77,9 +77,9 @@ def reset_models_settings():
     yield
     for _, member in inspect.getmembers(models):
         if inspect.isclass(member) and Endpoint in member.__bases__:
-            setattr(member, 'ConfigEndpoint', ConfigEndpoint())
+            member._set_default_config()
     setattr(
         ModelTest,
         'ConfigEndpoint',
-        ConfigEndpoint(current_config=TestExampleConfigEndpoint(), namespace=ModelTest.__dict__),
+        ConfigEndpoint(current_config=TestExampleConfigEndpoint()),
     )

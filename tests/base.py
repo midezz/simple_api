@@ -43,8 +43,10 @@ class TestBaseApi:
         self.session.add(model)
         self.session.commit()
         resp = self.client.get(f'{path}/{model.id}')
+        expected_result = data.copy()
+        expected_result['id'] = model.id
         assert resp.status_code == 200
-        assert resp.json() == model.get_columns_values()
+        assert resp.json() == expected_result
 
     def assert_post_test(self, data_payload, data_response, model_use, path):
         resp = self.client.post(path, json=data_payload)

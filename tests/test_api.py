@@ -6,7 +6,7 @@ from simplerestapi import Session, api
 from simplerestapi.router import SimpleApiRouter
 
 from .base import TestBaseApi
-from .models import Car
+from .models import Car, CustomUser
 
 
 @pytest.mark.usefixtures('db_setup')
@@ -20,7 +20,7 @@ class BaseTestAPIClass(TestBaseApi):
         self.connection = engine.connect()
         Session.configure(bind=self.connection)
         self.trans = self.connection.begin()
-        Car.ConfigEndpoint.denied_methods = self.denied_methods
+        Car._config_endpoint(denied_methods=self.denied_methods)
         self.app = Starlette(routes=[SimpleApiRouter(Car, self.path, self.api_class)])
         self.client = TestClient(self.app)
         self.session = Session()
@@ -87,7 +87,27 @@ class TestGetUpdateDeleteAPI(BaseTestAPIClass):
     data = {'name_model': 'test', 'production': 'new test', 'year': 100}
 
     def test_get(self):
+        Car._config_endpoint(exclude_fields=['customuser_id'])
         self.assert_get_test(self.data, Car, '')
+
+    def test_get_with_join_related(self):
+        Car._config_endpoint(join_related=['customuser'])
+        car = Car(**self.data)
+        user = CustomUser(name='John', surname='Dow', age=18)
+        car.customuser = user
+        self.session.add(car)
+        self.session.commit()
+        resp = self.client.get(f'/{car.id}')
+        assert resp.status_code == 200
+        expected = {
+            'id': car.id,
+            'name_model': 'test',
+            'production': 'new test',
+            'year': 100,
+            'customuser_id': user.id,
+            'customuser': {'id': user.id, 'name': 'John', 'surname': 'Dow', 'age': 18},
+        }
+        assert resp.json() == expected
 
     def test_get_not_found(self):
         model = Car(**self.data)

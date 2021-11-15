@@ -58,7 +58,9 @@ class Endpoint:
         related = {}
         for field in self.ConfigEndpoint.join_related:
             model = getattr(self, field)
-            if isinstance(model, list):
+            if model is None:
+                return {field: None}
+            elif isinstance(model, list):
                 related_values = [item.get_columns_values(next_relative_level=False) for item in model]
             else:
                 related_values = model.get_columns_values(next_relative_level=False)
@@ -73,9 +75,18 @@ class Endpoint:
     def validate_model(cls):
         return ModelValidator(cls).errors
 
+    @classmethod
+    def _set_default_config(cls):
+        setattr(cls, 'ConfigEndpoint', ConfigEndpoint())
+
+    @classmethod
+    def _config_endpoint(cls, **kwargs):
+        for key, val in kwargs.items():
+            setattr(cls.ConfigEndpoint, key, val)
+
 
 class ConfigEndpoint:
-    def __init__(self, current_config=None, namespace=None):
+    def __init__(self, current_config=None, namespace={}):
         self.pagination = 100
         self.denied_methods = []
         self.path = None
@@ -107,7 +118,7 @@ class ConfigEndpoint:
 
     @cached_property
     def join_related(self):
-        if self.namespace is None:
+        if self.current_config is None:
             return []
         join_related = getattr(self.current_config, 'join_related', [])
         if join_related is True:
