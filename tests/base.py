@@ -48,12 +48,13 @@ class TestBaseApi:
         assert resp.status_code == 200
         assert resp.json() == expected_result
 
-    def assert_post_test(self, data_payload, data_response, model_use, path):
+    def assert_post_test(self, data_payload, model_use, path):
         resp = self.client.post(path, json=data_payload)
         assert resp.status_code == 201
         query = self.session.query(model_use)
         assert query.count() == 1
         item = query.first().get_columns_values()
+        data_response = data_payload.copy()
         data_response['id'] = item['id']
         assert item == data_response
         assert resp.json() == data_response
@@ -73,8 +74,7 @@ class TestBaseApi:
             self.assert_get_test(get_data(model_use), model_use, path)
             self.rollback_new_session()
         if 'post' not in model_use.ConfigEndpoint.denied_methods:
-            data = get_data(model_use)
-            self.assert_post_test(data, data, model_use, path)
+            self.assert_post_test(get_data(model_use), model_use, path)
             self.rollback_new_session()
         if 'delete' not in model_use.ConfigEndpoint.denied_methods:
             self.assert_delete_test(get_data(model_use), model_use, path)

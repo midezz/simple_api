@@ -58,8 +58,8 @@ class TestCreateAPI(BaseTestAPIClass):
 
     def test_post(self):
         data_payload = {'name_model': 'test', 'production': 'new test', 'year': 100}
-        data_resp = {'name_model': 'test', 'production': 'new test', 'year': 100, 'customuser_id': None}
-        self.assert_post_test(data_payload, data_resp, Car, '/')
+        Car._config_endpoint(exclude_fields=['customuser_id'])
+        self.assert_post_test(data_payload, Car, '/')
 
     @pytest.mark.parametrize(
         'data',

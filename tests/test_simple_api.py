@@ -5,7 +5,7 @@ from simplerestapi import Session
 from simplerestapi.main import SimpleApi
 from tests import models
 
-from .base import TestBaseApi
+from .base import TestBaseApi, get_data
 
 
 @pytest.mark.usefixtures('db_setup')
@@ -33,54 +33,28 @@ class TestBase(TestSimpleApi):
     @pytest.mark.parametrize(
         'data, model_use, path',
         (
-            (
-                {'name_model': 'test', 'production': 'new test', 'year': 100},
-                models.Car,
-                '/car',
-            ),
-            (
-                {'name': 'Ivan', 'surname': 'Petrov', 'age': 30},
-                models.CustomUser,
-                '/customuser',
-            ),
+            (get_data(models.Car), models.Car, '/car'),
+            (get_data(models.CustomUser), models.CustomUser, '/customuser'),
         ),
     )
     def test_get(self, data, model_use, path):
         self.assert_get_test(data, model_use, path)
 
     @pytest.mark.parametrize(
-        'data, data_resp, model_use, path',
+        'data, model_use, path',
         (
-            (
-                {'name_model': 'Model 3', 'production': 'Tesla', 'year': 1},
-                {'name_model': 'Model 3', 'production': 'Tesla', 'year': 1},
-                models.Car,
-                '/car',
-            ),
-            (
-                {'name': 'Petr', 'surname': 'Ivanov', 'age': 29},
-                {'name': 'Petr', 'surname': 'Ivanov', 'age': 29},
-                models.CustomUser,
-                '/customuser',
-            ),
+            (get_data(models.Car), models.Car, '/car'),
+            (get_data(models.CustomUser), models.CustomUser, '/customuser'),
         ),
     )
-    def test_post(self, data, data_resp, model_use, path):
-        self.assert_post_test(data, data_resp, model_use, path)
+    def test_post(self, data, model_use, path):
+        self.assert_post_test(data, model_use, path)
 
     @pytest.mark.parametrize(
         'data, model_use, path',
         (
-            (
-                {'name_model': 'Model 3', 'production': 'Tesla', 'year': 1},
-                models.Car,
-                '/car',
-            ),
-            (
-                {'name': 'Petr', 'surname': 'Ivanov', 'age': 29},
-                models.CustomUser,
-                '/customuser',
-            ),
+            (get_data(models.Car), models.Car, '/car'),
+            (get_data(models.CustomUser), models.CustomUser, '/customuser'),
         ),
     )
     def test_delete(self, data, model_use, path):
@@ -100,40 +74,22 @@ class TestCustomizePath(TestSimpleApi):
     @pytest.mark.parametrize(
         'data, model_use, path',
         (
-            (
-                {'name_model': 'test', 'production': 'new test', 'year': 100},
-                models.Car,
-                '/new_car_path',
-            ),
-            (
-                {'name': 'Ivan', 'surname': 'Petrov', 'age': 30},
-                models.CustomUser,
-                '/new_user_path',
-            ),
+            (get_data(models.Car), models.Car, '/new_car_path'),
+            (get_data(models.CustomUser), models.CustomUser, '/new_user_path'),
         ),
     )
     def test_get_custom_path(self, data, model_use, path):
         self.assert_get_test(data, model_use, path)
 
     @pytest.mark.parametrize(
-        'data, data_resp, model_use, path',
+        'data, model_use, path',
         (
-            (
-                {'name_model': 'test_1', 'production': 'new test 22', 'year': 200},
-                {'name_model': 'test_1', 'production': 'new test 22', 'year': 200},
-                models.Car,
-                '/new_car_path',
-            ),
-            (
-                {'name': 'Ivan_1', 'surname': 'Petrov_1', 'age': 35},
-                {'name': 'Ivan_1', 'surname': 'Petrov_1', 'age': 35},
-                models.CustomUser,
-                '/new_user_path',
-            ),
+            (get_data(models.Car), models.Car, '/new_car_path'),
+            (get_data(models.CustomUser), models.CustomUser, '/new_user_path'),
         ),
     )
-    def test_post_custom_path(self, data, data_resp, model_use, path):
-        self.assert_post_test(data, data_resp, model_use, path)
+    def test_post_custom_path(self, data, model_use, path):
+        self.assert_post_test(data, model_use, path)
 
     @pytest.mark.parametrize('path', ('/car', '/customuser'))
     def test_old_path(self, path):
