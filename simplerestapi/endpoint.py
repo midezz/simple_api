@@ -2,7 +2,7 @@ from sqlalchemy.ext.declarative import DeclarativeMeta, declared_attr
 from sqlalchemy.orm.relationships import RelationshipProperty
 
 from .api import HANDLER_CLASS_LISTCREATE, GetUpdateDeleteAPI
-from .model_validator import ModelValidator
+from .config_validator import ModelValidator
 from .router import SimpleApiRouter
 from .utils import cached_property
 

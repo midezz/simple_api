@@ -91,7 +91,7 @@ class GetUpdateDeleteAPI(APIView):
             result = session.query(self.model).filter_by(**request.path_params)
             joins = self.model.get_joins()
             if joins:
-                result = result.join(*joins)
+                result = result.outerjoin(*joins)
             result = result.first()
         except Exception:
             session.close()

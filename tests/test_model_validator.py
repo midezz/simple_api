@@ -50,6 +50,10 @@ from .conftest import ERROR_TEMPLATE
             {'join_related': None},
             [ERROR_TEMPLATE.format('ModelTest', 'join_related', 'none is not an allowed value')],
         ),
+        (
+            {'exclude_fields': ['bla_bla_table_column', 'id']},
+            [ERROR_TEMPLATE.format('ModelTest', 'exclude_fields', 'not exists columns [bla_bla_table_column] in \'exclude_fields\' parameter')],
+        ),
     ),
 )
 def test_validate_config_endpoint(configuration_endpoint, expected_errors, configured_model):

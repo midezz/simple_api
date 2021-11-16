@@ -40,6 +40,50 @@ class TestBase(TestSimpleApi):
     def test_get(self, data, model_use, path):
         self.assert_get_test(data, model_use, path)
 
+    def test_get_with_join_related(self):
+        cars_data = [get_data(models.Car) for _ in range(3)]
+        cars = [models.Car(**data) for data in cars_data]
+        user_data = get_data(models.CustomUser)
+        user = models.CustomUser(**user_data)
+        user.car = cars
+        self.session.add(user)
+        self.session.add(models.Car(**get_data(models.Car)))
+        self.session.commit()
+        models.Car._config_endpoint(join_related=['customuser'], exclude_fields=[])
+        models.CustomUser._config_endpoint(join_related=['car'])
+        resp = self.client.get(f'/customuser/{user.id}')
+        expected = {
+            'id': user.id,
+            **user_data,
+            'car': [{'id': c.id, **c_data, 'customuser_id': user.id} for c, c_data in zip(cars, cars_data)],
+        }
+        assert resp.status_code == 200
+        assert resp.json() == expected
+        for car, car_data in zip(cars, cars_data):
+            resp = self.client.get(f'/car/{car.id}')
+            expected = {'id': car.id, **car_data, 'customuser_id': user.id, 'customuser': {'id': user.id, **user_data}}
+            assert resp.status_code == 200
+            assert resp.json() == expected
+
+    def test_get_with_join_none_related(self):
+        car_data = get_data(models.Car)
+        user_data = get_data(models.CustomUser)
+        car = models.Car(**car_data)
+        user = models.CustomUser(**user_data)
+        self.session.add(car)
+        self.session.add(user)
+        self.session.commit()
+        models.Car._config_endpoint(join_related=['customuser'], exclude_fields=[])
+        models.CustomUser._config_endpoint(join_related=['car'])
+        resp = self.client.get(f'/customuser/{user.id}')
+        expected = {'id': user.id, **user_data, 'car': []}
+        assert resp.status_code == 200
+        assert resp.json() == expected
+        resp = self.client.get(f'/car/{car.id}')
+        expected = {'id': car.id, **car_data, 'customuser_id': None, 'customuser': None}
+        assert resp.status_code == 200
+        assert resp.json() == expected
+
     @pytest.mark.parametrize(
         'data, model_use, path',
         (
