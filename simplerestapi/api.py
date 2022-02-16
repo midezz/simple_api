@@ -29,7 +29,7 @@ class CreateAPI(APIView):
             model = self.model(**data)
             session.add(model)
             session.commit()
-            values = self.model.get_columns_values(model)
+            values = model.get_columns_values(next_relative_level=False)
         except Exception:
             session.close()
             return JSONResponse({'errors': ['Bad request']}, status_code=400)
@@ -57,7 +57,7 @@ class ListAPI(APIView):
                 query = query.offset(offset).limit(self.model.ConfigEndpoint.pagination)
             else:
                 query = query.limit(0)
-        result = [self.model.get_columns_values(model) for model in query.all()]
+        result = [model.get_columns_values(next_relative_level=False) for model in query.all()]
         session.close()
         return JSONResponse(result)
 
@@ -80,22 +80,26 @@ class GetUpdateDeleteAPI(APIView):
         except Exception:
             session.close()
             return JSONResponse({'error': True}, status_code=400)
+        values = result.get_columns_values(next_relative_level=False)
         session.close()
-        values = self.model.get_columns_values(result)
         return JSONResponse(values)
 
     @check_allowed_methods
     async def get(self, request):
         session = Session()
         try:
-            result = session.query(self.model).filter_by(**request.path_params).first()
+            result = session.query(self.model).filter_by(**request.path_params)
+            joins = self.model.get_joins()
+            if joins:
+                result = result.outerjoin(*joins)
+            result = result.first()
         except Exception:
             session.close()
             return JSONResponse({'errors': ['Bad request']}, status_code=400)
-        session.close()
         if not result:
             return JSONResponse({'errors': ['Not found']}, status_code=404)
-        values = self.model.get_columns_values(result)
+        values = result.get_columns_values()
+        session.close()
         return JSONResponse(values)
 
     async def update(self, request):

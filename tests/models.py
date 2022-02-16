@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 from simplerestapi.endpoint import ConstructEndpoint, Endpoint
 
@@ -11,6 +12,7 @@ class CustomUser(Base, Endpoint):
     name = Column(String)
     surname = Column(String)
     age = Column(Integer)
+    car = relationship('Car')
 
 
 class Car(Base, Endpoint):
@@ -18,3 +20,5 @@ class Car(Base, Endpoint):
     name_model = Column(String)
     production = Column(String)
     year = Column(Integer, nullable=False)
+    customuser_id = Column(Integer, ForeignKey('customuser.id'))
+    customuser = relationship('CustomUser')

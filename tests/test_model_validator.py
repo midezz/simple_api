@@ -1,5 +1,7 @@
 import pytest
 
+from simplerestapi.endpoint import ConfigEndpoint
+
 from .conftest import ERROR_TEMPLATE
 
 
@@ -40,10 +42,32 @@ from .conftest import ERROR_TEMPLATE
             {'pagination': -2},
             [ERROR_TEMPLATE.format('ModelTest', 'pagination', 'value must be above or equal 0')],
         ),
+        (
+            {'join_related': False},
+            [ERROR_TEMPLATE.format('ModelTest', 'join_related', 'value must be True or List[str]')],
+        ),
+        (
+            {'join_related': None},
+            [ERROR_TEMPLATE.format('ModelTest', 'join_related', 'none is not an allowed value')],
+        ),
+        (
+            {'exclude_fields': ['bla_bla_table_column', 'id']},
+            [
+                ERROR_TEMPLATE.format(
+                    'ModelTest',
+                    'exclude_fields',
+                    'not exists columns [bla_bla_table_column] in \'exclude_fields\' parameter',
+                )
+            ],
+        ),
     ),
 )
 def test_validate_config_endpoint(configuration_endpoint, expected_errors, configured_model):
+    class TestConfig:
+        pass
+
     for key, val in configuration_endpoint.items():
-        setattr(configured_model.ConfigEndpoint, key, val)
+        setattr(TestConfig, key, val)
+    setattr(configured_model, 'ConfigEndpoint', ConfigEndpoint(current_config=TestConfig, namespace={}))
     errors = configured_model.validate_model()
     assert errors == expected_errors

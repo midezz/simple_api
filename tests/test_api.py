@@ -6,7 +6,7 @@ from simplerestapi import Session, api
 from simplerestapi.router import SimpleApiRouter
 
 from .base import TestBaseApi
-from .models import Car
+from .models import Car, CustomUser
 
 
 @pytest.mark.usefixtures('db_setup')
@@ -20,7 +20,7 @@ class BaseTestAPIClass(TestBaseApi):
         self.connection = engine.connect()
         Session.configure(bind=self.connection)
         self.trans = self.connection.begin()
-        Car.ConfigEndpoint.denied_methods = self.denied_methods
+        Car._config_endpoint(denied_methods=self.denied_methods)
         self.app = Starlette(routes=[SimpleApiRouter(Car, self.path, self.api_class)])
         self.client = TestClient(self.app)
         self.session = Session()
@@ -57,8 +57,9 @@ class TestCreateAPI(BaseTestAPIClass):
     api_class = api.CreateAPI
 
     def test_post(self):
-        data = {'name_model': 'test', 'production': 'new test', 'year': 100}
-        self.assert_post_test(data, Car, '/')
+        data_payload = {'name_model': 'test', 'production': 'new test', 'year': 100}
+        Car._config_endpoint(exclude_fields=['customuser_id'])
+        self.assert_post_test(data_payload, Car, '/')
 
     @pytest.mark.parametrize(
         'data',
@@ -86,7 +87,27 @@ class TestGetUpdateDeleteAPI(BaseTestAPIClass):
     data = {'name_model': 'test', 'production': 'new test', 'year': 100}
 
     def test_get(self):
+        Car._config_endpoint(exclude_fields=['customuser_id'])
         self.assert_get_test(self.data, Car, '')
+
+    def test_get_with_join_related(self):
+        Car._config_endpoint(join_related=['customuser'])
+        car = Car(**self.data)
+        user = CustomUser(name='John', surname='Dow', age=18)
+        car.customuser = user
+        self.session.add(car)
+        self.session.commit()
+        resp = self.client.get(f'/{car.id}')
+        assert resp.status_code == 200
+        expected = {
+            'id': car.id,
+            'name_model': 'test',
+            'production': 'new test',
+            'year': 100,
+            'customuser_id': user.id,
+            'customuser': {'id': user.id, 'name': 'John', 'surname': 'Dow', 'age': 18},
+        }
+        assert resp.json() == expected
 
     def test_get_not_found(self):
         model = Car(**self.data)
@@ -158,7 +179,7 @@ class TestListAPI(BaseTestAPIClass):
         assert resp.status_code == 200
         result = resp.json()
         assert len(result) == len(models)
-        except_result = [Car.get_columns_values(model) for model in models]
+        except_result = [model.get_columns_values() for model in models]
         assert result == except_result
 
     def test_empty_list(self):
@@ -191,7 +212,7 @@ class TestListAPI(BaseTestAPIClass):
         resp = self.client.get('/', params=filters)
         assert resp.status_code == 200
         result = resp.json()
-        expect = [Car.get_columns_values(models[i]) for i in expect_ids]
+        expect = [models[i].get_columns_values() for i in expect_ids]
         assert result == expect
 
     @pytest.mark.parametrize(
@@ -209,7 +230,7 @@ class TestListAPI(BaseTestAPIClass):
         resp = self.client.get('/', params=order)
         assert resp.status_code == 200
         result = resp.json()
-        expect = [Car.get_columns_values(models[i]) for i in expect_ids]
+        expect = [models[i].get_columns_values() for i in expect_ids]
         assert result == expect
 
     @pytest.mark.parametrize(
@@ -232,7 +253,7 @@ class TestListAPI(BaseTestAPIClass):
         resp = self.client.get('/', params=limit)
         assert resp.status_code == 200
         result = resp.json()
-        expect = [Car.get_columns_values(models[i]) for i in range(start, end)]
+        expect = [models[i].get_columns_values() for i in range(start, end)]
         assert result == expect
 
     def test_noncorrect_request(self):

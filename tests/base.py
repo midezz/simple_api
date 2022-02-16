@@ -43,18 +43,21 @@ class TestBaseApi:
         self.session.add(model)
         self.session.commit()
         resp = self.client.get(f'{path}/{model.id}')
+        expected_result = data.copy()
+        expected_result['id'] = model.id
         assert resp.status_code == 200
-        assert resp.json() == model_use.get_columns_values(model)
+        assert resp.json() == expected_result
 
-    def assert_post_test(self, data, model_use, path):
-        resp = self.client.post(path, json=data)
+    def assert_post_test(self, data_payload, model_use, path):
+        resp = self.client.post(path, json=data_payload)
         assert resp.status_code == 201
         query = self.session.query(model_use)
         assert query.count() == 1
-        item = model_use.get_columns_values(query.first())
-        data['id'] = item['id']
-        assert item == data
-        assert resp.json() == data
+        item = query.first().get_columns_values()
+        data_response = data_payload.copy()
+        data_response['id'] = item['id']
+        assert item == data_response
+        assert resp.json() == data_response
 
     def assert_delete_test(self, data, model_use, path):
         model = model_use(**data)
@@ -62,7 +65,7 @@ class TestBaseApi:
         self.session.commit()
         resp = self.client.delete(f'{path}/{model.id}')
         assert resp.status_code == 200
-        assert resp.json() == model_use.get_columns_values(model)
+        assert resp.json() == model.get_columns_values()
         query = self.session.query(model_use)
         assert query.count() == 0
 
