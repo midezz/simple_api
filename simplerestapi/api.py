@@ -3,6 +3,7 @@ from starlette.responses import JSONResponse
 
 from . import Session
 from .url_params import UrlParams
+from sqlalchemy.exc import DBAPIError
 
 
 def check_allowed_methods(method):
@@ -24,18 +25,18 @@ class APIView(HTTPEndpoint):
 class CreateAPI(APIView):
     async def post(self, request):
         data = await request.json()
-        session = Session()
-        try:
-            model = self.model(**data)
-            session.add(model)
-            session.commit()
-            values = model.get_columns_values(next_relative_level=False)
-        except Exception:
-            session.close()
-            return JSONResponse({'errors': ['Bad request']}, status_code=400)
-        else:
-            session.close()
-            return JSONResponse(values, status_code=201)
+        async with Session() as session:
+            async with session.begin():
+                try:
+                    model = self.model(**data)
+                    session.add(model)
+                    await session.commit()
+                    values = model.get_columns_values(next_relative_level=False)
+                except DBAPIError as error:
+                    result = JSONResponse({'errors': [str(error.orig)]}, status_code=400)
+                else:
+                    result = JSONResponse(values, status_code=201)
+        return result
 
 
 class ListAPI(APIView):

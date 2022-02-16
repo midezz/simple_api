@@ -1,6 +1,7 @@
 import inspect
 
 from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import create_async_engine
 from starlette.applications import Starlette
 
 from . import Session
@@ -16,7 +17,7 @@ class SimpleApi:
         self.get_models(models)
         self.raise_exceptions_by_errors()
         self.construct_routes()
-        self.engine = create_engine(db)
+        self.engine = create_async_engine(db)
         Session.configure(bind=self.engine)
         self.app = Starlette(debug=debug, routes=self.routes)
 

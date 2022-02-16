@@ -14,7 +14,7 @@ class CustomUser(Base, Endpoint):
     name = Column(String)
     surname = Column(String)
     age = Column(Integer)
-    car = relationship('Car')
+    car = relationship('Car', back_populates='customuser')
 
     class ConfigEndpoint:
         join_related = ['car']
@@ -26,7 +26,7 @@ class Car(Base, Endpoint):
     production = Column(String)
     year = Column(Integer)
     customuser_id = Column(Integer, ForeignKey('customuser.id'))
-    customuser = relationship('CustomUser')
+    customuser = relationship('CustomUser', back_populates='car')
 
     class ConfigEndpoint:
         join_related = ['customuser']
@@ -34,6 +34,6 @@ class Car(Base, Endpoint):
 
 if __name__ == '__main__':
     print('Start creating tables')
-    engine = create_engine(os.environ['DB_URL'])
+    engine = create_engine(os.environ['DB_URL_SYNC'])
     Base.metadata.create_all(engine)
     print('Tables created')
