@@ -52,7 +52,13 @@ from .conftest import ERROR_TEMPLATE
         ),
         (
             {'exclude_fields': ['bla_bla_table_column', 'id']},
-            [ERROR_TEMPLATE.format('ModelTest', 'exclude_fields', 'not exists columns [bla_bla_table_column] in \'exclude_fields\' parameter')],
+            [
+                ERROR_TEMPLATE.format(
+                    'ModelTest',
+                    'exclude_fields',
+                    'not exists columns [bla_bla_table_column] in \'exclude_fields\' parameter',
+                )
+            ],
         ),
     ),
 )

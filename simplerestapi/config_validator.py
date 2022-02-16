@@ -53,7 +53,9 @@ class ModelValidator:
             self.add_error(msg.format(', '.join(wrong_parameters)))
 
     def validate_exclude_fields(self):
-        wrong_exclude_fields = set(self.model.ConfigEndpoint.exclude_fields) - {c.name for c in self.model.__table__.columns}
+        wrong_exclude_fields = set(self.model.ConfigEndpoint.exclude_fields) - {
+            c.name for c in self.model.__table__.columns
+        }
         if len(wrong_exclude_fields) > 0:
             msg = '\'exclude_fields\': not exists columns {0} in \'exclude_fields\' parameter'
             self.add_error(msg.format('[' + ', '.join(wrong_exclude_fields) + ']'))
