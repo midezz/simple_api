@@ -10,3 +10,4 @@ script:
   - isort -c .
   - black --check .
   - pytest
+if: type != pull_request
